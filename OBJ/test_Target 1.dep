@@ -1,5 +1,5 @@
 Dependencies for Project 'test', Target 'Target 1': (DO NOT MODIFY !)
-F (.\main.c)(0x58468518)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\ATK-ESP8266 -I ..\HARDWARE\LCD -I ..\HARDWARE\SPI -I ..\HARDWARE\TIMER -I ..\HARDWARE\TOUCH -I ..\HARDWARE\USART2 -I ..\MALLOC -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\usart -I ..\STM32F10x_FWLib\inc -I ..\CORE -I ..\USER -I ..\HARDWARE\CC1101 -I ..\HARDWARE\SPI-I "E:\Github Project\Oil_Can(Queen)\USER\RTE"-I "C:\My Program\MDK518\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include"-I "C:\My Program\MDK518\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_HD -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER-o ..\obj\main.o --omf_browse ..\obj\main.crf --depend ..\obj\main.d)
+F (.\main.c)(0x5848DB4E)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\ATK-ESP8266 -I ..\HARDWARE\LCD -I ..\HARDWARE\SPI -I ..\HARDWARE\TIMER -I ..\HARDWARE\TOUCH -I ..\HARDWARE\USART2 -I ..\MALLOC -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\usart -I ..\STM32F10x_FWLib\inc -I ..\CORE -I ..\USER -I ..\HARDWARE\CC1101 -I ..\HARDWARE\SPI-I "E:\Github Project\Oil_Can(Queen)\USER\RTE"-I "C:\My Program\MDK518\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include"-I "C:\My Program\MDK518\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_HD -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER-o ..\obj\main.o --omf_browse ..\obj\main.crf --depend ..\obj\main.d)
 I (..\SYSTEM\delay\delay.h)(0x584581EF)
 I (..\SYSTEM\sys\sys.h)(0x550F951B)
 I (..\USER\stm32f10x.h)(0x4D783CB4)
@@ -16,8 +16,8 @@ I (..\STM32F10x_FWLib\inc\stm32f10x_usart.h)(0x504F415E)
 I (..\STM32F10x_FWLib\inc\misc.h)(0x4D783BB4)
 I (..\SYSTEM\usart\usart.h)(0x50517A82)
 I (C:\My Program\MDK518\ARM\ARMCC\include\stdio.h)(0x569DEA3A)
-I (..\ATK-ESP8266\common.h)(0x58457B4D)
-I (..\HARDWARE\LCD\lcd.h)(0x58457FDD)
+I (..\ATK-ESP8266\common.h)(0x58492C21)
+I (..\HARDWARE\LCD\lcd.h)(0x5848D295)
 I (C:\My Program\MDK518\ARM\ARMCC\include\stdlib.h)(0x569DEA3A)
 I (..\HARDWARE\TOUCH\touch.h)(0x58456CEE)
 I (..\HARDWARE\TOUCH\ott2001a.h)(0x5479BE9F)
@@ -25,7 +25,7 @@ I (..\HARDWARE\TOUCH\gt9147.h)(0x544F934F)
 I (..\HARDWARE\TOUCH\ft5206.h)(0x55CB0BAF)
 I (..\MALLOC\malloc.h)(0x5845603B)
 I (C:\My Program\MDK518\ARM\ARMCC\include\string.h)(0x569DEA3A)
-I (..\HARDWARE\USART2\usart2.h)(0x53C7735F)
+I (..\HARDWARE\USART2\usart2.h)(0x5847FA17)
 I (..\ATK-ESP8266\wifista.h)(0x5845614C)
 I (..\HARDWARE\CC1101\cc1101.h)(0x58462AEF)
 I (..\HARDWARE\CC1101\cc1101_REG.h)(0x583CF644)
@@ -422,7 +422,7 @@ I (..\STM32F10x_FWLib\inc\stm32f10x_spi.h)(0x4D783BB4)
 I (..\STM32F10x_FWLib\inc\stm32f10x_tim.h)(0x4D783BB4)
 I (..\STM32F10x_FWLib\inc\stm32f10x_usart.h)(0x504F415E)
 I (..\STM32F10x_FWLib\inc\misc.h)(0x4D783BB4)
-F (..\HARDWARE\TOUCH\touch.c)(0x58457D98)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\ATK-ESP8266 -I ..\HARDWARE\LCD -I ..\HARDWARE\SPI -I ..\HARDWARE\TIMER -I ..\HARDWARE\TOUCH -I ..\HARDWARE\USART2 -I ..\MALLOC -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\usart -I ..\STM32F10x_FWLib\inc -I ..\CORE -I ..\USER -I ..\HARDWARE\CC1101 -I ..\HARDWARE\SPI-I "E:\Github Project\Oil_Can(Queen)\USER\RTE"-I "C:\My Program\MDK518\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include"-I "C:\My Program\MDK518\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_HD -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER-o ..\obj\touch.o --omf_browse ..\obj\touch.crf --depend ..\obj\touch.d)
+F (..\HARDWARE\TOUCH\touch.c)(0x5848160E)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\ATK-ESP8266 -I ..\HARDWARE\LCD -I ..\HARDWARE\SPI -I ..\HARDWARE\TIMER -I ..\HARDWARE\TOUCH -I ..\HARDWARE\USART2 -I ..\MALLOC -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\usart -I ..\STM32F10x_FWLib\inc -I ..\CORE -I ..\USER -I ..\HARDWARE\CC1101 -I ..\HARDWARE\SPI-I "E:\Github Project\Oil_Can(Queen)\USER\RTE"-I "C:\My Program\MDK518\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include"-I "C:\My Program\MDK518\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_HD -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER-o ..\obj\touch.o --omf_browse ..\obj\touch.crf --depend ..\obj\touch.d)
 I (..\HARDWARE\TOUCH\touch.h)(0x58456CEE)
 I (..\SYSTEM\sys\sys.h)(0x550F951B)
 I (..\USER\stm32f10x.h)(0x4D783CB4)
@@ -440,11 +440,11 @@ I (..\STM32F10x_FWLib\inc\misc.h)(0x4D783BB4)
 I (..\HARDWARE\TOUCH\ott2001a.h)(0x5479BE9F)
 I (..\HARDWARE\TOUCH\gt9147.h)(0x544F934F)
 I (..\HARDWARE\TOUCH\ft5206.h)(0x55CB0BAF)
-I (..\HARDWARE\LCD\lcd.h)(0x58457FDD)
+I (..\HARDWARE\LCD\lcd.h)(0x5848D295)
 I (C:\My Program\MDK518\ARM\ARMCC\include\stdlib.h)(0x569DEA3A)
 I (..\SYSTEM\delay\delay.h)(0x584581EF)
 I (C:\My Program\MDK518\ARM\ARMCC\include\math.h)(0x569DEA3A)
-F (..\HARDWARE\USART2\usart2.c)(0x584684C5)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\ATK-ESP8266 -I ..\HARDWARE\LCD -I ..\HARDWARE\SPI -I ..\HARDWARE\TIMER -I ..\HARDWARE\TOUCH -I ..\HARDWARE\USART2 -I ..\MALLOC -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\usart -I ..\STM32F10x_FWLib\inc -I ..\CORE -I ..\USER -I ..\HARDWARE\CC1101 -I ..\HARDWARE\SPI-I "E:\Github Project\Oil_Can(Queen)\USER\RTE"-I "C:\My Program\MDK518\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include"-I "C:\My Program\MDK518\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_HD -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER-o ..\obj\usart2.o --omf_browse ..\obj\usart2.crf --depend ..\obj\usart2.d)
+F (..\HARDWARE\USART2\usart2.c)(0x5847F8F3)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\ATK-ESP8266 -I ..\HARDWARE\LCD -I ..\HARDWARE\SPI -I ..\HARDWARE\TIMER -I ..\HARDWARE\TOUCH -I ..\HARDWARE\USART2 -I ..\MALLOC -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\usart -I ..\STM32F10x_FWLib\inc -I ..\CORE -I ..\USER -I ..\HARDWARE\CC1101 -I ..\HARDWARE\SPI-I "E:\Github Project\Oil_Can(Queen)\USER\RTE"-I "C:\My Program\MDK518\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include"-I "C:\My Program\MDK518\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_HD -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER-o ..\obj\usart2.o --omf_browse ..\obj\usart2.crf --depend ..\obj\usart2.d)
 I (..\SYSTEM\delay\delay.h)(0x584581EF)
 I (..\SYSTEM\sys\sys.h)(0x550F951B)
 I (..\USER\stm32f10x.h)(0x4D783CB4)
@@ -459,12 +459,12 @@ I (..\STM32F10x_FWLib\inc\stm32f10x_spi.h)(0x4D783BB4)
 I (..\STM32F10x_FWLib\inc\stm32f10x_tim.h)(0x4D783BB4)
 I (..\STM32F10x_FWLib\inc\stm32f10x_usart.h)(0x504F415E)
 I (..\STM32F10x_FWLib\inc\misc.h)(0x4D783BB4)
-I (..\HARDWARE\USART2\usart2.h)(0x53C7735F)
+I (..\HARDWARE\USART2\usart2.h)(0x5847FA17)
 I (C:\My Program\MDK518\ARM\ARMCC\include\stdarg.h)(0x569DEA3A)
 I (C:\My Program\MDK518\ARM\ARMCC\include\stdio.h)(0x569DEA3A)
 I (C:\My Program\MDK518\ARM\ARMCC\include\string.h)(0x569DEA3A)
-F (..\HARDWARE\LCD\lcd.c)(0x58457FDD)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\ATK-ESP8266 -I ..\HARDWARE\LCD -I ..\HARDWARE\SPI -I ..\HARDWARE\TIMER -I ..\HARDWARE\TOUCH -I ..\HARDWARE\USART2 -I ..\MALLOC -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\usart -I ..\STM32F10x_FWLib\inc -I ..\CORE -I ..\USER -I ..\HARDWARE\CC1101 -I ..\HARDWARE\SPI-I "E:\Github Project\Oil_Can(Queen)\USER\RTE"-I "C:\My Program\MDK518\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include"-I "C:\My Program\MDK518\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_HD -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER-o ..\obj\lcd.o --omf_browse ..\obj\lcd.crf --depend ..\obj\lcd.d)
-I (..\HARDWARE\LCD\lcd.h)(0x58457FDD)
+F (..\HARDWARE\LCD\lcd.c)(0x58481E98)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\ATK-ESP8266 -I ..\HARDWARE\LCD -I ..\HARDWARE\SPI -I ..\HARDWARE\TIMER -I ..\HARDWARE\TOUCH -I ..\HARDWARE\USART2 -I ..\MALLOC -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\usart -I ..\STM32F10x_FWLib\inc -I ..\CORE -I ..\USER -I ..\HARDWARE\CC1101 -I ..\HARDWARE\SPI-I "E:\Github Project\Oil_Can(Queen)\USER\RTE"-I "C:\My Program\MDK518\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include"-I "C:\My Program\MDK518\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_HD -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER-o ..\obj\lcd.o --omf_browse ..\obj\lcd.crf --depend ..\obj\lcd.d)
+I (..\HARDWARE\LCD\lcd.h)(0x5848D295)
 I (..\SYSTEM\sys\sys.h)(0x550F951B)
 I (..\USER\stm32f10x.h)(0x4D783CB4)
 I (..\CORE\core_cm3.h)(0x4D523B58)
@@ -531,8 +531,8 @@ I (..\STM32F10x_FWLib\inc\stm32f10x_spi.h)(0x4D783BB4)
 I (..\STM32F10x_FWLib\inc\stm32f10x_tim.h)(0x4D783BB4)
 I (..\STM32F10x_FWLib\inc\stm32f10x_usart.h)(0x504F415E)
 I (..\STM32F10x_FWLib\inc\misc.h)(0x4D783BB4)
-F (..\ATK-ESP8266\common.c)(0x584684D2)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\ATK-ESP8266 -I ..\HARDWARE\LCD -I ..\HARDWARE\SPI -I ..\HARDWARE\TIMER -I ..\HARDWARE\TOUCH -I ..\HARDWARE\USART2 -I ..\MALLOC -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\usart -I ..\STM32F10x_FWLib\inc -I ..\CORE -I ..\USER -I ..\HARDWARE\CC1101 -I ..\HARDWARE\SPI-I "E:\Github Project\Oil_Can(Queen)\USER\RTE"-I "C:\My Program\MDK518\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include"-I "C:\My Program\MDK518\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_HD -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER-o ..\obj\common.o --omf_browse ..\obj\common.crf --depend ..\obj\common.d)
-I (..\ATK-ESP8266\common.h)(0x58457B4D)
+F (..\ATK-ESP8266\common.c)(0x5849408C)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\ATK-ESP8266 -I ..\HARDWARE\LCD -I ..\HARDWARE\SPI -I ..\HARDWARE\TIMER -I ..\HARDWARE\TOUCH -I ..\HARDWARE\USART2 -I ..\MALLOC -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\usart -I ..\STM32F10x_FWLib\inc -I ..\CORE -I ..\USER -I ..\HARDWARE\CC1101 -I ..\HARDWARE\SPI-I "E:\Github Project\Oil_Can(Queen)\USER\RTE"-I "C:\My Program\MDK518\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include"-I "C:\My Program\MDK518\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_HD -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER-o ..\obj\common.o --omf_browse ..\obj\common.crf --depend ..\obj\common.d)
+I (..\ATK-ESP8266\common.h)(0x58492C21)
 I (..\SYSTEM\sys\sys.h)(0x550F951B)
 I (..\USER\stm32f10x.h)(0x4D783CB4)
 I (..\CORE\core_cm3.h)(0x4D523B58)
@@ -549,7 +549,7 @@ I (..\STM32F10x_FWLib\inc\misc.h)(0x4D783BB4)
 I (..\SYSTEM\usart\usart.h)(0x50517A82)
 I (C:\My Program\MDK518\ARM\ARMCC\include\stdio.h)(0x569DEA3A)
 I (..\SYSTEM\delay\delay.h)(0x584581EF)
-I (..\HARDWARE\LCD\lcd.h)(0x58457FDD)
+I (..\HARDWARE\LCD\lcd.h)(0x5848D295)
 I (C:\My Program\MDK518\ARM\ARMCC\include\stdlib.h)(0x569DEA3A)
 I (..\HARDWARE\TOUCH\touch.h)(0x58456CEE)
 I (..\HARDWARE\TOUCH\ott2001a.h)(0x5479BE9F)
@@ -557,9 +557,9 @@ I (..\HARDWARE\TOUCH\gt9147.h)(0x544F934F)
 I (..\HARDWARE\TOUCH\ft5206.h)(0x55CB0BAF)
 I (..\MALLOC\malloc.h)(0x5845603B)
 I (C:\My Program\MDK518\ARM\ARMCC\include\string.h)(0x569DEA3A)
-I (..\HARDWARE\USART2\usart2.h)(0x53C7735F)
+I (..\HARDWARE\USART2\usart2.h)(0x5847FA17)
 F (..\ATK-ESP8266\wifista.c)(0x58467FC6)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I ..\ATK-ESP8266 -I ..\HARDWARE\LCD -I ..\HARDWARE\SPI -I ..\HARDWARE\TIMER -I ..\HARDWARE\TOUCH -I ..\HARDWARE\USART2 -I ..\MALLOC -I ..\SYSTEM\delay -I ..\SYSTEM\sys -I ..\SYSTEM\usart -I ..\STM32F10x_FWLib\inc -I ..\CORE -I ..\USER -I ..\HARDWARE\CC1101 -I ..\HARDWARE\SPI-I "E:\Github Project\Oil_Can(Queen)\USER\RTE"-I "C:\My Program\MDK518\ARM\PACK\Keil\STM32F1xx_DFP\2.1.0\Device\Include"-I "C:\My Program\MDK518\ARM\CMSIS\Include"-D__UVISION_VERSION="518" -DSTM32F10X_HD -DSTM32F10X_HD -DUSE_STDPERIPH_DRIVER-o ..\obj\wifista.o --omf_browse ..\obj\wifista.crf --depend ..\obj\wifista.d)
-I (..\ATK-ESP8266\common.h)(0x58457B4D)
+I (..\ATK-ESP8266\common.h)(0x58492C21)
 I (..\SYSTEM\sys\sys.h)(0x550F951B)
 I (..\USER\stm32f10x.h)(0x4D783CB4)
 I (..\CORE\core_cm3.h)(0x4D523B58)
@@ -576,7 +576,7 @@ I (..\STM32F10x_FWLib\inc\misc.h)(0x4D783BB4)
 I (..\SYSTEM\usart\usart.h)(0x50517A82)
 I (C:\My Program\MDK518\ARM\ARMCC\include\stdio.h)(0x569DEA3A)
 I (..\SYSTEM\delay\delay.h)(0x584581EF)
-I (..\HARDWARE\LCD\lcd.h)(0x58457FDD)
+I (..\HARDWARE\LCD\lcd.h)(0x5848D295)
 I (C:\My Program\MDK518\ARM\ARMCC\include\stdlib.h)(0x569DEA3A)
 I (..\HARDWARE\TOUCH\touch.h)(0x58456CEE)
 I (..\HARDWARE\TOUCH\ott2001a.h)(0x5479BE9F)
@@ -584,6 +584,6 @@ I (..\HARDWARE\TOUCH\gt9147.h)(0x544F934F)
 I (..\HARDWARE\TOUCH\ft5206.h)(0x55CB0BAF)
 I (..\MALLOC\malloc.h)(0x5845603B)
 I (C:\My Program\MDK518\ARM\ARMCC\include\string.h)(0x569DEA3A)
-I (..\HARDWARE\USART2\usart2.h)(0x53C7735F)
+I (..\HARDWARE\USART2\usart2.h)(0x5847FA17)
 I (..\ATK-ESP8266\wifista.h)(0x5845614C)
 F (..\README.TXT)(0x576CE03B)()

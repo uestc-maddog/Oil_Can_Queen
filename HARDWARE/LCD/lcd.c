@@ -602,7 +602,7 @@ void LCD_Init(void)
 	delay_ms(50); // delay 50 ms 
 	LCD_WriteReg(0x0000,0x0001);
 	delay_ms(50); // delay 50 ms 
-  lcddev.id = LCD_ReadReg(0x0000);   
+    lcddev.id = LCD_ReadReg(0x0000);   
 	if(lcddev.id<0XFF||lcddev.id==0XFFFF||lcddev.id==0X9300)//读到ID不正确,新增lcddev.id==0X9300判断，因为9341在未被复位的情况下会被读成9300
 	{	
  		//尝试9341 ID的读取		

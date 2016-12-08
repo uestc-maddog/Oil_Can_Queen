@@ -36,70 +36,73 @@ int main(void)
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);  // 设置NVIC中断分组2:2位抢占优先级，2位响应优先级	  
 	uart_init(115200);	 	                         // 初始化串口1波特率为115200	调试
 	USART2_Init(115200);                             // 初始化串口2波特率为115200   wifi
+	
+	LCD_Init();				                         // 初始化液晶 		
+	LCD_ShowString(25,150,200,24,24,(u8*)"wifi scanning..."); 
+	tp_dev.init();			                         // 初始化触摸屏
+	
 	SPI1_Init();                                     // CC1101 SPI通信初始化
 	TIM3_Init(99,7199);		                         // CC1101 1ms中断
 	mem_init();                                      // 初始化内存池
 	
-	LCD_Init();				                         // 初始化液晶 		
-	tp_dev.init();			                         // 初始化触摸屏
-	LCD_ShowString(0,100,200,16,16,(u8*)"Oil Can"); 
-
 	printf("Oil Can...\r\n");
 	atk_8266_init();                                 // ATK-ESP8266模块初始化配置函数
-	CC1101Init();                                    // 初始化CC1101
+	
+	while(1);
+//	CC1101Init();                                    // 初始化CC1101
 
-#if (WORK_MODE == TX)     // 执行发送模块程序
-	SendBuffer[1] = TX_Address;  // 数据包源地址
-	printf("Mode:TX\r\n");
-	CC1101SetTRMode(TX_MODE);    // 发送模式  
-	while(1)
-	{
-//		do
+//#if (WORK_MODE == TX)     // 执行发送模块程序
+//	SendBuffer[1] = TX_Address;  // 数据包源地址
+//	printf("Mode:TX\r\n");
+//	CC1101SetTRMode(TX_MODE);    // 发送模式  
+//	while(1)
+//	{
+////		do
+////		{
+////			res = RF_SendPacket(SendBuffer, SEND_LENGTH);
+////			if(res != 0) printf("\r\nSend ERROR:%d\r\n", (int)res);  // 发送错误
+////		} while(res != 0);
+////		printf("\r\nSend OK\r\n"); 
+//		u8 res = RF_SendPacket(SendBuffer, SEND_LENGTH);
+//		if(res != 0) printf("\r\nSend ERROR:%d\r\n", (int)res);  // 发送错误代码
+//		delay_ms(1000);
+//		delay_ms(1000);
+//		delay_ms(1000);
+//		delay_ms(1000);
+//	}
+//#else                     // 执行接收模块程序
+//	printf("Mode:RX\r\n");
+//	CC1101SetTRMode(RX_MODE);   // 接收模式  
+//	while(1)
+//	{
+//		u8 res = RF_RecvHandler();                              // 无线数据接收处理 
+//		if(res != 0) printf("Rec ERROR:%d\r\n", (int)res);      // 接收错误
+//		else                                                    // 接收成功
 //		{
-//			res = RF_SendPacket(SendBuffer, SEND_LENGTH);
-//			if(res != 0) printf("\r\nSend ERROR:%d\r\n", (int)res);  // 发送错误
-//		} while(res != 0);
-//		printf("\r\nSend OK\r\n"); 
-		u8 res = RF_SendPacket(SendBuffer, SEND_LENGTH);
-		if(res != 0) printf("\r\nSend ERROR:%d\r\n", (int)res);  // 发送错误代码
-		delay_ms(1000);
-		delay_ms(1000);
-		delay_ms(1000);
-		delay_ms(1000);
-	}
-#else                     // 执行接收模块程序
-	printf("Mode:RX\r\n");
-	CC1101SetTRMode(RX_MODE);   // 接收模式  
-	while(1)
-	{
-		u8 res = RF_RecvHandler();                              // 无线数据接收处理 
-		if(res != 0) printf("Rec ERROR:%d\r\n", (int)res);      // 接收错误
-		else                                                    // 接收成功
-		{
-			while(1)    // 持续发送，直到发送成功！
-			{
-				if(atk_8266_wifisend_data((u8*)Str_Info) == 0)      // wifi发送失败
-				{
-					if(++Link_Error == 3)     // 连续3次发送失败，重新连接TCP
-					{
-						Link_Error = 0;       // 清零
-						printf("连接出错，正在重新连接...\r\n\r\n");	
-						atk_8266_init();      // ATK-ESP8266模块初始化配置函数
-						delay_ms(500);
-					}
-					delay_ms(500);
-				}
-				else                                                // wifi发送成功
-				{
-					Link_Error = 0;      // 清零
-					printf("wifi发送成功\r\n\r\n");
-					break;
-				}
-			}
-		}
-	}
-#endif
-}
+//			while(1)    // 持续发送，直到发送成功！
+//			{
+//				if(atk_8266_wifisend_data((u8*)Str_Info) == 0)      // wifi发送失败
+//				{
+//					if(++Link_Error == 3)     // 连续3次发送失败，重新连接TCP
+//					{
+//						Link_Error = 0;       // 清零
+//						printf("连接出错，正在重新连接...\r\n\r\n");	
+//						atk_8266_init();      // ATK-ESP8266模块初始化配置函数
+//						delay_ms(500);
+//					}
+//					delay_ms(500);
+//				}
+//				else                                                // wifi发送成功
+//				{
+//					Link_Error = 0;      // 清零
+//					printf("wifi发送成功\r\n\r\n");
+//					break;
+//				}
+//			}
+//		}
+//	}
+//#endif
+//}
 
 //int main(void)
 //{
@@ -151,7 +154,7 @@ int main(void)
 //	}
 //	
 //#endif
-//}
+}
 
 void Load_Drow_Dialog(void)
 {
