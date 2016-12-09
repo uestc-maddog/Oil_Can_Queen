@@ -6,16 +6,14 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 //用户配置区
 
-//连接端口号:8086,可自行修改为其他端口.
+//连接端口号:8080,可自行修改为其他端口.
 const u8* remote_ip = (u8*)"192.168.191.1";	
 //const u8* remote_ip = "222.212.204.66";	
-
 const u8* portnum   = (u8*)"8080";	 
 
 //WIFI STA模式,设置要去连接的路由器无线参数,请根据你自己的路由器设置,自行修改.
-u8* wifista_ssid = (u8*)"growl";			              // 路由器SSID号
-//const u8* wifista_encryption=(u8*)"wpawpa2_aes";          // wpa/wpa2 aes加密方式
-//u8* wifista_password=(u8*)"12345678"; 	                  // 连接密码
+u8* wifista_ssid = (u8*)"growl";       // 路由器SSID号
+
 volatile u8 PWD_Temp[15] = {0,};       // 密码输入缓存
 volatile u8 PWD_Index = 0;             // 标记当前密码长度
 
@@ -661,7 +659,7 @@ u8 Load_Kb_Char(void)
 							printf("PWD_Temp:%s\r\n", PWD_Temp);
 							if(PWD_Index < 8)           // 输入密码长度 < 8
 							{
-								POINT_COLOR = GRAY;                               // 当输入密码长度 > 8 时， 由GRAY -> RED, 触摸有效
+								POINT_COLOR = GRAY;                             // 当输入密码长度 > 8 时， 由GRAY -> RED, 触摸有效
 								BACK_COLOR = 0xEEEE; 
 								LCD_Fill(203,25,239,50,0xEEEE);	
 								LCD_ShowString(205,30,35,16,16, (u8*)"Join"); 
