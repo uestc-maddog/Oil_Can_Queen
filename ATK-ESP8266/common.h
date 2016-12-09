@@ -48,8 +48,8 @@ u8 atk_8266_wifiap_test(void);	//WIFI AP测试
 extern const u8* portnum;			 // 连接端口
  
 extern u8* wifista_ssid;		     // WIFI STA SSID
-extern const u8* wifista_encryption; // WIFI STA 加密方式
-extern u8* wifista_password; 	     // WIFI STA 密码
+//extern const u8* wifista_encryption; // WIFI STA 加密方式
+//extern u8* wifista_password; 	     // WIFI STA 密码
 
 
 extern const u8* ATK_ESP8266_CWMODE_TBL[3];

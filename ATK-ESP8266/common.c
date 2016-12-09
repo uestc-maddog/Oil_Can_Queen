@@ -7,20 +7,23 @@
 //用户配置区
 
 //连接端口号:8086,可自行修改为其他端口.
-const u8* remote_ip = (u8*)"192.168.190.1";	
+const u8* remote_ip = (u8*)"192.168.191.1";	
 //const u8* remote_ip = "222.212.204.66";	
 
-const u8* portnum   = (u8*)"8086";	 
+const u8* portnum   = (u8*)"8080";	 
 
 //WIFI STA模式,设置要去连接的路由器无线参数,请根据你自己的路由器设置,自行修改.
 u8* wifista_ssid = (u8*)"growl";			              // 路由器SSID号
-const u8* wifista_encryption=(u8*)"wpawpa2_aes";          // wpa/wpa2 aes加密方式
-u8* wifista_password=(u8*)"12345678"; 	                  // 连接密码
+//const u8* wifista_encryption=(u8*)"wpawpa2_aes";          // wpa/wpa2 aes加密方式
+//u8* wifista_password=(u8*)"12345678"; 	                  // 连接密码
 volatile u8 PWD_Temp[15] = {0,};       // 密码输入缓存
 volatile u8 PWD_Index = 0;             // 标记当前密码长度
 
 volatile u8 IP_Temp[16] = {0,};        // 密码输入缓存
 volatile u8 IP_Index = 0;              // 标记当前IP长度
+
+volatile u8 Pnum_Temp[7] = {0,};       // 密码输入缓存
+volatile u8 Pnum_Index = 0;            // 标记当前IP长度
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 //4个网络模式
@@ -224,7 +227,7 @@ void atk_8266_init(void)
 	delay_ms(1000);         //延时3S等待重启成功
 	delay_ms(1000);
 	delay_ms(1000);
-wifi_scan:	
+
 	while(1)
 	{
 		if(AP_Choose() == 0)     // 成功选择wifi
@@ -263,14 +266,14 @@ wifi_scan:
 	printf("成功连接目标wifi：%s\r\n", wifista_ssid);
 	delay_ms(650);delay_ms(650);
 	//TCP
-	IP_Temp[0] = 0;        // 密码输入缓存
-    IP_Index = 0;          // 标记当前IP长度
-	if(Enter_TCP_IP())   goto wifi_scan;        // 输入IP及端口失败
+//	IP_Temp[0] = 0;        // 密码输入缓存
+//    IP_Index = 0;          // 标记当前IP长度
+//	if(Enter_TCP_IP())   goto wifi_scan;        // 输入IP及端口失败
 	
-	printf("正在连接TCP服务器 %s:%s\r\n", IP_Temp, (u8*)portnum);
+	printf("正在连接TCP服务器 %s:%s\r\n", (u8*)remote_ip, (u8*)portnum);
 	// 成功输入TCP服务器IP
 	atk_8266_send_cmd((u8*)"AT+CIPMUX=0",(u8*)"OK",20);   //0：单连接，1：多连接
-	sprintf((char*)p,(const char*)"AT+CIPSTART=\"TCP\",\"%s\",%s",IP_Temp,(u8*)portnum);    //配置目标TCP服务器
+	sprintf((char*)p,(const char*)"AT+CIPSTART=\"TCP\",\"%s\",%s",(u8*)remote_ip,(u8*)portnum);    //配置目标TCP服务器
 	timer = 0;
 	while(atk_8266_send_cmd(p,(u8*)"OK",300))
 	{
@@ -461,8 +464,8 @@ u8 Enter_AP_PWD(void)
 					{
 						if(PWD_Index >= 8)           // 输入密码长度 > 8
 						{
-							wifista_password = (u8*)PWD_Temp;  // 获取到密码
-							printf("wifista_password:%s\r\n", wifista_password);
+//							wifista_password = (u8*)PWD_Temp;  // 获取到密码
+							printf("wifista_password:%s\r\n", PWD_Temp);
 							delay_ms(300);
 							return 0;
 						}
@@ -489,7 +492,7 @@ u8 Enter_AP_PWD(void)
 							POINT_COLOR = BLACK;
 							BACK_COLOR = WHITE;
 						}
-						delay_ms(500);
+						delay_ms(300);
 					}
 					else
 					{
@@ -516,7 +519,7 @@ u8 Enter_AP_PWD(void)
 								POINT_COLOR = BLACK;
 								BACK_COLOR = WHITE;
 							}
-							delay_ms(500);
+							delay_ms(300);
 						}							
 					}
 				}	
@@ -546,7 +549,7 @@ u8 Load_Kb_Char(void)
 	volatile u8 Char_Shitf = 0;         // 大/小写字母标志
 	volatile u8 i = 0, j = 0, Touch_Up = 1, timer = 0;
 
-	delay_ms(700);
+	delay_ms(500);
 	KbChar_UI(Char_Shitf);
 	BACK_COLOR = WHITE;
 	
@@ -570,8 +573,8 @@ u8 Load_Kb_Char(void)
 					{
 						if(PWD_Index >= 8)           // 输入密码长度 > 8
 						{
-							wifista_password = (u8*)PWD_Temp;  // 获取到密码
-							printf("wifista_password:%s\r\n", wifista_password);
+//							wifista_password = (u8*)PWD_Temp;  // 获取到密码
+							printf("wifista_password:%s\r\n", PWD_Temp);
 							delay_ms(300);
 							return 0;
 						}
@@ -604,7 +607,7 @@ u8 Load_Kb_Char(void)
 									POINT_COLOR = BLACK;
 									BACK_COLOR = WHITE;
 								}
-								delay_ms(500);
+								delay_ms(300);
 							}
 						}
 						else         // 小写模式
@@ -625,7 +628,7 @@ u8 Load_Kb_Char(void)
 									POINT_COLOR = BLACK;
 									BACK_COLOR = WHITE;
 								}
-								delay_ms(500);
+								delay_ms(300);
 							}
 						}
 					}
@@ -638,14 +641,14 @@ u8 Load_Kb_Char(void)
 						
 						if(Kb_char[i][j] == '1')       // 切换到数字键盘
 						{
-							delay_ms(1000);
+							delay_ms(800);
 							return 1;         
 						} 
 						else if(Kb_char[i][j] == '+')  // 切换大写字母键盘
 						{
 							if(Char_Shitf == 0) Char_Shitf = 1;   
 							else                Char_Shitf = 0; 
-							delay_ms(800);
+							delay_ms(700);
 							KbChar_UI(Char_Shitf);
 						} 
 						else if(Kb_char[i][j] == '2')  // 删除前一个字符            
@@ -665,7 +668,7 @@ u8 Load_Kb_Char(void)
 								POINT_COLOR = BLACK;
 								BACK_COLOR = WHITE;
 							}
-							delay_ms(500);
+							delay_ms(300);
 						}							
 					}
 					
@@ -788,27 +791,32 @@ u8 KbChar_UI(u8 shift)
 u8 Enter_TCP_IP(void)
 {
 	volatile u8 i = 0, j = 0, Touch_Up = 1, timer = 0, dot_timer = 0;
-	
+	typedef enum{Enter_IPAddr = 0, Enter_IPCom,} Enter_TCP_Sta;
+	volatile Enter_TCP_Sta my_tcp_sta = Enter_IPAddr; 
+		
 	LCD_Clear(WHITE);	 								
 	
 	POINT_COLOR = BLUE;
 	BACK_COLOR = WHITE;
-	LCD_ShowString(64,30,200,16,16, (u8*)"Enter The TCP IP"); 
+	LCD_ShowString(64,15,200,16,16, (u8*)"Enter The TCP IP");  // 30
 	
 	POINT_COLOR = RED;
 	BACK_COLOR = 0xEEEE;
-	LCD_Fill(0,25,52,50,0xEEEE);	
-	LCD_ShowString(2,30,50,16,16, (u8*)"Cancel"); 
+	LCD_Fill(0,10,52,35,0xEEEE);	
+	LCD_ShowString(2,15,50,16,16, (u8*)"Cancel"); 
 	
 	POINT_COLOR = GRAY;                               // 当输入密码长度 > 8 时， 由GRAY -> RED, 触摸有效
-	LCD_Fill(203,25,239,50,0xEEEE);	
-	LCD_ShowString(205,30,35,16,16, (u8*)"Done"); 
+	LCD_Fill(203,10,239,35,0xEEEE);	
+	LCD_ShowString(205,15,35,16,16, (u8*)"Done"); 
 	
 	
 	POINT_COLOR = BLACK;
 	BACK_COLOR = WHITE;
+	LCD_DrawLine(0, 49, 239, 49);
+	LCD_ShowString(12,54,200,16,16, (u8*)"  IP:"); 
+	
 	LCD_DrawLine(0, 75, 239, 75);
-	LCD_ShowString(20,80,200,16,16, (u8*)" IP:"); 
+	LCD_ShowString(12,80,200,16,16, (u8*)"Port:"); 
 	LCD_DrawLine(0, 101, 239, 101);
 	
 	// 加载数字键盘UI
@@ -822,7 +830,11 @@ u8 Enter_TCP_IP(void)
 		{	
 			if(tp_dev.x[0]<lcddev.width&&tp_dev.y[0]<lcddev.height)
 			{	
-				if(tp_dev.y[0] >= 25 && tp_dev.y[0] <= 50)
+				if(tp_dev.y[0] >= 49 && tp_dev.y[0] <= 75)      my_tcp_sta = Enter_IPAddr;     // 触摸到IP输入区域
+				else if(tp_dev.y[0] > 75 && tp_dev.y[0] <= 101) my_tcp_sta = Enter_IPCom;      // 触摸到Com输入区域
+				printf("my_tcp_sta:%d\r\n", (int)my_tcp_sta);
+				
+				if(tp_dev.y[0] >= 10 && tp_dev.y[0] <= 35)
 				{
 					if(tp_dev.x[0] < 52)                // Cancel 
 					{
@@ -835,9 +847,12 @@ u8 Enter_TCP_IP(void)
 					{
 						if(dot_timer >= 3 && IP_Temp[IP_Index-1] != '.')            
 						{
-							printf("wifista_password:%s\r\n", IP_Temp);
-							delay_ms(300);
-							return 0;
+							if(Pnum_Index >= 1 && Pnum_Index <= 5)      // 端口号长度为 1~5
+							{
+								printf("IP:%s Port:%s\r\n", IP_Temp, Pnum_Temp);
+								delay_ms(300);
+								return 0;
+							}
 						}
 					}
 				}
@@ -874,15 +889,6 @@ u8 Enter_TCP_IP(void)
 							IP_Temp[IP_Index] = 0;     // 添加字符串结束符
 							printf("PWD_Temp:%s dot_timer = %d IP_Temp[IP_Index-1] = %d\r\n", IP_Temp, dot_timer, IP_Temp[IP_Index-1]);
 							
-//							if(dot_timer >= 3 && IP_Temp[IP_Index-1] != '.')           // 输入密码长度 >= 15
-//							{
-//								POINT_COLOR = RED;                               // 当输入密码长度 > 8 时， 由GRAY -> RED, 触摸有效
-//								BACK_COLOR = 0xEEEE;
-//								LCD_Fill(203,25,239,50,0xEEEE);	
-//								LCD_ShowString(205,30,35,16,16, (u8*)"Done"); 
-//								POINT_COLOR = BLACK;
-//								BACK_COLOR = WHITE;
-//							}
 							delay_ms(500);
 						} 
 						else                     // 删除前一个字符            
@@ -921,12 +927,30 @@ u8 Enter_TCP_IP(void)
 		delay_ms(10);	
 		if(++timer == 50)
 		{
-			LCD_ShowChar(60+IP_Index*10,80,'|',16,0);
+			if(my_tcp_sta == Enter_IPAddr)              // IP
+			{
+				LCD_ShowChar(60+IP_Index*10,54,'|',16,0);      
+				LCD_ShowChar(60+Pnum_Index*10,80,' ',16,0);
+			}
+			else                                        // Port
+			{
+				LCD_ShowChar(60+Pnum_Index*10,80,'|',16,0);  
+				LCD_ShowChar(60+IP_Index*10,54,' ',16,0);
+			}
 		}
 		if(timer == 100)
 		{
 			timer = 0;
-			LCD_ShowChar(60+IP_Index*10,80,' ',16,0);
+			if(my_tcp_sta == Enter_IPAddr) 
+			{
+				LCD_ShowChar(60+IP_Index*10,54,' ',16,0);
+				LCD_ShowChar(60+Pnum_Index*10,80,' ',16,0);
+			}
+			else                          
+			{
+				LCD_ShowChar(60+Pnum_Index*10,80,' ',16,0);
+				LCD_ShowChar(60+IP_Index*10,54,' ',16,0);
+			}
 		}
 	}		
 }
