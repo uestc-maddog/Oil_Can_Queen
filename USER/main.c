@@ -16,9 +16,9 @@ u16 RecvCnt = 0;
 int RecvWaitTime = 0;                    // 接收等待超时时间
 
                                 // 帧头  源地址  目标地址 有效数据9B                                   帧尾2B
-u8 SendBuffer[SEND_LENGTH] = {0x55,   0,    0xff,    '2', '9', '6', '8', '5', '1', '2', '9', '2', 0x0d, 0x0a};       // 待发送数据
+u8 SendBuffer[SEND_LENGTH] = {0x55,   0,    0xff,    '2', '9', '6', '8', '5', '1', '2', '9', '2', 0x0d, 0x0a};  // 从机待发送数据
                                 // 帧头  源地址  目标地址  帧尾2B
-u8 AckBuffer[ACK_LENGTH]   = {0x55,  0xff,     0,     0x0d, 0x0a};                                  // 主机应答数据
+u8 AckBuffer[ACK_LENGTH]   = {0x55,  0xff,     0,     0x0d, 0x0a};                                              // 主机应答数据
 
 volatile u8 Str_Info[20];       // 从机数据包中的 有效数据
 
@@ -47,8 +47,7 @@ int main(void)
 	
 	printf("Oil Can...\r\n");
 	atk_8266_init();                                 // ATK-ESP8266模块初始化配置函数
-	
-	while(1)
+	printf("atk_8266_init OK!\r\n");
 	CC1101Init();                                    // 初始化CC1101
 
 #if (WORK_MODE == TX)     // 执行发送模块程序
@@ -157,10 +156,10 @@ int main(void)
 
 void Load_Drow_Dialog(void)
 {
-		LCD_Clear(WHITE);//清屏   
-		POINT_COLOR=BLUE;//设置字体为蓝色 
-		LCD_ShowString(lcddev.width-24,0,200,16,16,(u8*)"RST");//显示清屏区域
-		POINT_COLOR=RED;//设置画笔蓝色 
+	LCD_Clear(WHITE);//清屏   
+	POINT_COLOR=BLUE;//设置字体为蓝色 
+	LCD_ShowString(lcddev.width-24,0,200,16,16,(u8*)"RST");//显示清屏区域
+	POINT_COLOR=RED;//设置画笔蓝色 
 }
 ////////////////////////////////////////////////////////////////////////////////
 //5个触控点的颜色												 
@@ -196,7 +195,6 @@ void rtp_test(void)
 ============================================================================*/
 uint8_t RF_SendPacket(uint8_t *Sendbuffer, uint8_t length)
 {
-	volatile uint8_t ack_flag = 1;         // =1,接收应答信号,=0不处理
 	uint8_t  i = 0, ack_len = 0, ack_buffer[65] = {0};
 	
 	CC1101SendPacket(SendBuffer, length, ADDRESS_CHECK);    // 发送数据   

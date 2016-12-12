@@ -517,8 +517,8 @@ void TIM3_Set(u8 sta)
 	if(sta)
 	{  
 		TIM_SetCounter(TIM3,0);     // 计数器清空
-		TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE);                 // 使能指定的TIM3中断,允许更新中断
-		TIM_Cmd(TIM3, ENABLE);      // 使能TIMx	
+		TIM_ITConfig(TIM3,TIM_IT_Update,ENABLE);  // 使能指定的TIM3中断,允许更新中断
+		TIM_Cmd(TIM3, ENABLE);      // 使能TIM3	
 	}
 	else 
 	{
