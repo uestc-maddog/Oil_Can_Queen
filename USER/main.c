@@ -15,6 +15,8 @@ u16 SendCnt = 0;
 u16 RecvCnt = 0;
 int RecvWaitTime = 0;                    // 接收等待超时时间
 
+u8 Link_Flag = 0;                        // 标记已建立过连接，可直接连入上次选择的wifi
+
                                 // 帧头  源地址  目标地址 有效数据9B                                   帧尾2B
 u8 SendBuffer[SEND_LENGTH] = {0x55,   0,    0xff,    '2', '9', '6', '8', '5', '1', '2', '9', '2', 0x0d, 0x0a};  // 从机待发送数据
                                 // 帧头  源地址  目标地址  帧尾2B

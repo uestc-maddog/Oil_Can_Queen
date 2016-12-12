@@ -13,7 +13,7 @@ const u8* portnum   = (u8*)"8080";
 
 //WIFI STA模式,设置要去连接的路由器无线参数,请根据你自己的路由器设置,自行修改.
 u8* wifista_ssid = (u8*)"growl";       // 路由器SSID号
-
+extern u8 Link_Flag;                   // 标记已建立过连接，可直接连入上次选择的wifi
 volatile u8 PWD_Temp[15] = {0,};       // 密码输入缓存
 volatile u8 PWD_Index = 0;             // 标记当前密码长度
 
@@ -228,7 +228,8 @@ void atk_8266_init(void)
 
 	while(1)
 	{
-		if(AP_Choose() == 0)     // 成功选择wifi
+		if(Link_Flag == 1) break;  // 已建立过连接，可直接连入上次选择的wifi
+		if(AP_Choose() == 0)       // 成功选择wifi
 		{
 			PWD_Index = 0;                 // 标记当前密码长度
 			if(Enter_AP_PWD() == 0) break; // 成功输入密码
@@ -261,6 +262,8 @@ void atk_8266_init(void)
 	POINT_COLOR = BLUE;
 	BACK_COLOR = WHITE;
 	LCD_ShowString(15,120,225,16,16,(u8*)"wifi Connection successful!");
+	
+	Link_Flag = 1;                        // 标记已建立过连接，可直接连入上次选择的wifi
 	printf("成功连接目标wifi：%s\r\n", wifista_ssid);
 	delay_ms(650);delay_ms(650);
 	//TCP
