@@ -13,7 +13,7 @@ uint8_t PaTabel[] = {0xc0, 0xC8, 0x84, 0x60, 0x34, 0x1D, 0x0E, 0x12};   // 433MH
 
 // Sync word qualifier mode = 30/32 sync word bits detected 
 // CRC autoflush = false 
-// Channel spacing = 199.951172 
+// Channel spacing = 199.951172 KHz
 // Data format = Normal mode 
 // Data rate = 2.00224 
 // RX filter BW = 58.035714 
@@ -33,17 +33,47 @@ uint8_t PaTabel[] = {0xc0, 0xC8, 0x84, 0x60, 0x34, 0x1D, 0x0E, 0x12};   // 433MH
 // Base frequency = 399.999939 
 // Modulated = true 
 // Channel number = 1 
+
 // PA table 
 #define PA_TABLE {0xc2,0x00,0x00,0x00,0x00,0x00,0x00,0x00,}
 
+//// RF = 915MHz
+//static const uint8_t CC1101InitData[22][2]= 
+//{
+//  {CC1101_IOCFG0,   0x06},
+//  {CC1101_FIFOTHR,  0x47},
+//  {CC1101_PKTCTRL0, 0x05},
+//  {CC1101_CHANNR,   0x01},   // 通道1  Channel number = 1
+//  {CC1101_FSCTRL1,  0x06},
+//  {CC1101_FREQ2,    0x23},   // 基频  915.000000       载波频率=基频+步进（0.2MHz）* 通道号  915.199951MHz
+//  {CC1101_FREQ1,    0x31},
+//  {CC1101_FREQ0,    0x3B},
+//  {CC1101_MDMCFG4,  0xFA},   // 数据速率：49.9878kBaud
+//  {CC1101_MDMCFG3,  0xF8},
+//  {CC1101_MDMCFG2,  0x13},
+//  {CC1101_DEVIATN,  0x15},
+//  {CC1101_MCSM0,    0x18},
+//  {CC1101_FOCCFG,   0x16},
+//  {CC1101_WORCTRL,  0xFB},
+//  {CC1101_FSCAL3,   0xE9},
+//  {CC1101_FSCAL2,   0x2A},
+//  {CC1101_FSCAL1,   0x00},
+//  {CC1101_FSCAL0,   0x1F},
+//  {CC1101_TEST2,    0x81},
+//  {CC1101_TEST1,    0x35},
+//  {CC1101_MCSM1,    0x3B},
+//};
+
+
+// RF = 400MHz
 static const uint8_t CC1101InitData[22][2]= 
 {
   {CC1101_IOCFG0,   0x06},
   {CC1101_FIFOTHR,  0x47},
   {CC1101_PKTCTRL0, 0x05},
-  {CC1101_CHANNR,   0x01},
+  {CC1101_CHANNR,   0x01},   // 通道1  Channel number = 1
   {CC1101_FSCTRL1,  0x06},
-  {CC1101_FREQ2,    0x0F},
+  {CC1101_FREQ2,    0x0F}, // 基频  399.999939MHz    载波频率=基频+步进（0.2MHz）* 通道号  400.199890MHz
   {CC1101_FREQ1,    0x62},
   {CC1101_FREQ0,    0x76},
   {CC1101_MDMCFG4,  0xF6},
@@ -60,29 +90,6 @@ static const uint8_t CC1101InitData[22][2]=
   {CC1101_TEST2,    0x81},
   {CC1101_TEST1,    0x35},
   {CC1101_MCSM1,    0x3B},
-
-//  {CC1101_IOCFG0,      0x06},
-//  {CC1101_FIFOTHR,     0x47},
-//  {CC1101_PKTCTRL0,    0x05},
-//  {CC1101_CHANNR,      0x00},
-//  {CC1101_FSCTRL1,     0x08},
-//  {CC1101_FREQ2,       0x10},
-//  {CC1101_FREQ1,       0xA7},
-//  {CC1101_FREQ0,       0x62},
-//  {CC1101_MDMCFG4,     0x5B},
-//  {CC1101_MDMCFG3,     0xF8},
-//  {CC1101_MDMCFG2,     0x03},
-//  {CC1101_DEVIATN,     0x47},
-//  {CC1101_MCSM0,       0x18},
-//  {CC1101_FOCCFG,      0x1D},
-//  {CC1101_WORCTRL,     0xFB},
-//  {CC1101_FSCAL3,      0xEA},
-//  {CC1101_FSCAL2,      0x2A},
-//  {CC1101_FSCAL1,      0x00},
-//  {CC1101_FSCAL0,      0x11},
-//  {CC1101_TEST2,       0x81},
-//  {CC1101_TEST1,       0x35},
-//  {CC1101_MCSM1,       0x3B},
 };
 
 uint8_t CC1101ReadReg(uint8_t addr);                                  // read a byte from the specified register
@@ -94,7 +101,7 @@ uint8_t CC1101GetRXCnt(void);                                         // Get rec
 void CC1101Reset(void);                                               // Reset the CC1101 device
 void CC1101WriteMultiReg(uint8_t addr, uint8_t *buff, uint8_t size);  // Write some bytes to the specified register
 
-extern int RecvWaitTime;                    // 接收等待超时时间
+extern volatile int RecvWaitTime;                    // 接收等待超时时间
 /*
 ================================================================================
 Function : CC1101WORInit()
@@ -470,9 +477,10 @@ void CC1101Init(void)
 	CC1101SetAddress(RX_Address, BROAD_0AND255);
 #endif
 	
-	CC1101SetSYNC(0x8799);
-	CC1101WriteReg(CC1101_MDMCFG1, 0x72); //Modem Configuration
-
+	CC1101SetSYNC(0x8799);                // 8799
+	CC1101WriteReg(CC1101_MDMCFG1, 0x72); // Modem Configuration    0x22
+//	CC1101WriteReg(CC1101_MDMCFG0, 0xF8);
+	
 	CC1101WriteMultiReg(CC1101_PATABLE, PaTabel+1, 1);  // 功率
 //	CC1101WriteMultiReg(CC1101_PATABLE, PaTabel, 8);
 

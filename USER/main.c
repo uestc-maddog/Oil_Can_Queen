@@ -13,7 +13,7 @@
 volatile u16 Time_1ms = 0;               // 1ms计数器  接收方应答超时检测
 u16 SendCnt = 0;
 u16 RecvCnt = 0;
-int RecvWaitTime = 0;                    // 接收等待超时时间
+volatile int RecvWaitTime = 0;                    // 接收等待超时时间
 
 u8 Link_Flag = 0;                        // 标记已建立过连接，可直接连入上次选择的wifi
 
@@ -156,33 +156,6 @@ int main(void)
 //	
 //#endif
 
-void Load_Drow_Dialog(void)
-{
-	LCD_Clear(WHITE);//清屏   
-	POINT_COLOR=BLUE;//设置字体为蓝色 
-	LCD_ShowString(lcddev.width-24,0,200,16,16,(u8*)"RST");//显示清屏区域
-	POINT_COLOR=RED;//设置画笔蓝色 
-}
-////////////////////////////////////////////////////////////////////////////////
-//5个触控点的颜色												 
-//电阻触摸屏测试函数
-void rtp_test(void)
-{
-	while(1)
-	{
-		tp_dev.scan(0); 		 
-		if(tp_dev.sta&TP_PRES_DOWN)			//触摸屏被按下
-		{	
-			if(tp_dev.x[0]<lcddev.width&&tp_dev.y[0]<lcddev.height)
-			{	
-				if(tp_dev.x[0]>(lcddev.width-24)&&tp_dev.y[0]<16)Load_Drow_Dialog();//清除
-				else TP_Draw_Big_Point(tp_dev.x[0],tp_dev.y[0],RED);		//画图	  			   
-			}
-		}
-		else delay_ms(10);	//没有按键按下的时候 	    
-	}
-}
-
 /*===========================================================================
 * 函数 : RF_SendPacket() => 无线发送数据函数                            *
 * 输入 : Sendbuffer指向待发送的数据包，length数据包长度                 *
@@ -254,13 +227,27 @@ uint8_t RF_RecvHandler(void)
 {
 	uint8_t i = 0, j = 0, length = 0, recv_buffer[30] = {0};
 	
+	
 	CC1101SetTRMode(RX_MODE);            // 设置RF芯片为接收模式,接收数据
 	
-	printf("waiting for data...\r\n");
+	printf("waiting...\r\n");
 	while(CC_IRQ_READ() != 0);           // 等待接收数据包
-	printf("waiting for data1...\r\n");
-	while(CC_IRQ_READ() == 0);
-
+	printf("waiting1...\r\n");
+	
+	RecvWaitTime = 50;                   // 等待应答超时限制50ms  正常情况10ms之内会完成
+	TIM3_Set(1);                         // 开启定时器TIM3
+	while(CC_IRQ_READ() == 0)
+	{
+		if(RecvWaitTime <= 0)      
+		{  
+			TIM3_Set(0);                            // 关闭定时器TIM3
+			printf("waiting2...\r\n");
+			break;                                  // 等待应答超时
+		}
+	}
+	TIM3_Set(0);                            // 关闭定时器TIM3
+	printf("RecvWaitTime=%d\r\n", RecvWaitTime);    // 正常情况10ms之内会完成
+	
 	for(i=0; i<SEND_LENGTH; i++) recv_buffer[i] = 0;  // 数据清零,防止误判
 	length = CC1101RecPacket(recv_buffer);            // 读取接受到的数据长度和数据内容
 
