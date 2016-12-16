@@ -8,9 +8,12 @@
 // 发送：14mA@-10dBm  16mA@0dBm 19mA@+5dBm 29mA@+10dBm
 // 接收：14.2mA@500kbps  15.4mA@2.4kbps    RSSI能连续读取
 
-                     //10,    7,    5,    0,   -10,  -15, -20, -30dbm
-uint8_t PaTabel[] = {0xc0, 0xC8, 0x84, 0x60, 0x34, 0x1D, 0x0E, 0x12};   // 433MHz
+//                     //10,    7,    5,    0,   -10,  -15, -20, -30dbm
+//uint8_t PaTabel[] = {0xc0, 0xC8, 0x84, 0x60, 0x34, 0x1D, 0x0E, 0x12};   // 433M  
 
+                   
+uint8_t PaTabel[] = {0xc0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,};       // 915MHz   10dBm
+//uint8_t PaTabel[] = {0xC0 ,0xC0 ,0xC0 ,0xC0 ,0xC0 ,0xC0 ,0xC0 ,0xC0};   // 915MHz   10dBm
 // Sync word qualifier mode = 30/32 sync word bits detected 
 // CRC autoflush = false 
 // Channel spacing = 199.951172 KHz
@@ -34,10 +37,39 @@ uint8_t PaTabel[] = {0xc0, 0xC8, 0x84, 0x60, 0x34, 0x1D, 0x0E, 0x12};   // 433MH
 // Modulated = true 
 // Channel number = 1 
 
-// PA table 
-#define PA_TABLE {0xc2,0x00,0x00,0x00,0x00,0x00,0x00,0x00,}
+//// PA table 
+//#define PA_TABLE {0xc2,0x00,0x00,0x00,0x00,0x00,0x00,0x00,}
 
-//// RF = 915MHz
+// RF = 915MHz
+static const uint8_t CC1101InitData[23][2]= 
+{
+  {CC1101_IOCFG0,   0x06},
+  {CC1101_FIFOTHR,  0x47},
+  {CC1101_PKTCTRL0, 0x05},
+  {CC1101_CHANNR,   0x01},   // 通道1  Channel number = 1
+  {CC1101_FSCTRL1,  0x06},
+  {CC1101_FREQ2,    0x23},   // 基频  915.000000       载波频率=基频+步进（0.2MHz）* 通道号  915.199951MHz
+  {CC1101_FREQ1,    0x31},
+  {CC1101_FREQ0,    0x3B},
+  {CC1101_MDMCFG4,  0xFA},   // 数据速率：49.9878kBaud
+  {CC1101_MDMCFG3,  0xF8},
+  {CC1101_MDMCFG2,  0x13},
+  {CC1101_DEVIATN,  0x15},
+  {CC1101_MCSM2,    0x07},   // none
+  {CC1101_MCSM1,    0x30},   // 0x3B
+  {CC1101_MCSM0,    0x18},
+  {CC1101_FOCCFG,   0x16},
+  {CC1101_WORCTRL,  0xFB},
+  {CC1101_FSCAL3,   0xE9},
+  {CC1101_FSCAL2,   0x2A},
+  {CC1101_FSCAL1,   0x00},
+  {CC1101_FSCAL0,   0x1F},
+  {CC1101_TEST2,    0x81},
+  {CC1101_TEST1,    0x35},
+};
+
+
+//// RF = 400MHz
 //static const uint8_t CC1101InitData[22][2]= 
 //{
 //  {CC1101_IOCFG0,   0x06},
@@ -45,11 +77,11 @@ uint8_t PaTabel[] = {0xc0, 0xC8, 0x84, 0x60, 0x34, 0x1D, 0x0E, 0x12};   // 433MH
 //  {CC1101_PKTCTRL0, 0x05},
 //  {CC1101_CHANNR,   0x01},   // 通道1  Channel number = 1
 //  {CC1101_FSCTRL1,  0x06},
-//  {CC1101_FREQ2,    0x23},   // 基频  915.000000       载波频率=基频+步进（0.2MHz）* 通道号  915.199951MHz
-//  {CC1101_FREQ1,    0x31},
-//  {CC1101_FREQ0,    0x3B},
-//  {CC1101_MDMCFG4,  0xFA},   // 数据速率：49.9878kBaud
-//  {CC1101_MDMCFG3,  0xF8},
+//  {CC1101_FREQ2,    0x0F},   // 基频  399.999939MHz    载波频率=基频+步进（0.2MHz）* 通道号  400.199890MHz
+//  {CC1101_FREQ1,    0x62},
+//  {CC1101_FREQ0,    0x76},
+//  {CC1101_MDMCFG4,  0xF6},
+//  {CC1101_MDMCFG3,  0x43},
 //  {CC1101_MDMCFG2,  0x13},
 //  {CC1101_DEVIATN,  0x15},
 //  {CC1101_MCSM0,    0x18},
@@ -63,34 +95,6 @@ uint8_t PaTabel[] = {0xc0, 0xC8, 0x84, 0x60, 0x34, 0x1D, 0x0E, 0x12};   // 433MH
 //  {CC1101_TEST1,    0x35},
 //  {CC1101_MCSM1,    0x3B},
 //};
-
-
-// RF = 400MHz
-static const uint8_t CC1101InitData[22][2]= 
-{
-  {CC1101_IOCFG0,   0x06},
-  {CC1101_FIFOTHR,  0x47},
-  {CC1101_PKTCTRL0, 0x05},
-  {CC1101_CHANNR,   0x01},   // 通道1  Channel number = 1
-  {CC1101_FSCTRL1,  0x06},
-  {CC1101_FREQ2,    0x0F}, // 基频  399.999939MHz    载波频率=基频+步进（0.2MHz）* 通道号  400.199890MHz
-  {CC1101_FREQ1,    0x62},
-  {CC1101_FREQ0,    0x76},
-  {CC1101_MDMCFG4,  0xF6},
-  {CC1101_MDMCFG3,  0x43},
-  {CC1101_MDMCFG2,  0x13},
-  {CC1101_DEVIATN,  0x15},
-  {CC1101_MCSM0,    0x18},
-  {CC1101_FOCCFG,   0x16},
-  {CC1101_WORCTRL,  0xFB},
-  {CC1101_FSCAL3,   0xE9},
-  {CC1101_FSCAL2,   0x2A},
-  {CC1101_FSCAL1,   0x00},
-  {CC1101_FSCAL0,   0x1F},
-  {CC1101_TEST2,    0x81},
-  {CC1101_TEST1,    0x35},
-  {CC1101_MCSM1,    0x3B},
-};
 
 uint8_t CC1101ReadReg(uint8_t addr);                                  // read a byte from the specified register
 void CC1101ReadMultiReg(uint8_t addr, uint8_t *buff, uint8_t size);   // Read some bytes from the rigisters continously
@@ -269,7 +273,7 @@ void CC1101Reset(void)
 	CC_CSN_HIGH();
 	CC_CSN_LOW();
 	CC_CSN_HIGH();
-	delay_us(150);                  // 至少40us
+	delay_us(80);                  // 至少40us
 	CC1101WriteCmd(CC1101_SRES);
 }
 /*
@@ -337,7 +341,7 @@ void CC1101SendPacket(uint8_t *txbuffer, uint8_t size, TX_DATA_MODE mode)
 #else 
 		address = TX_Address;
 #endif
-		
+	
 		CC1101WriteReg(CC1101_TXFIFO, size + 1);
 		CC1101WriteReg(CC1101_TXFIFO, address);
 	}
@@ -410,15 +414,15 @@ uint8_t CC1101RecPacket(uint8_t *rxBuffer)
 	uint8_t status[2], pktLen;
 	uint16_t x = 0;
 
-	if(CC1101GetRXCnt()!= 0)
+	if(CC1101GetRXCnt()!= 0)        // 接收到数据
 	{
-		pktLen = CC1101ReadReg(CC1101_RXFIFO);           // Read length byte
+		pktLen = CC1101ReadReg(CC1101_RXFIFO) & 0xff;           // Read length byte
 		if((CC1101ReadReg(CC1101_PKTCTRL1) & ~0x03)!= 0)
 		{
 			x = CC1101ReadReg(CC1101_RXFIFO);
 		}
-		if(pktLen == 0) return 0;
-		else            pktLen --;
+		if(pktLen <= 0 || pktLen > 30) return 0;
+		else                           pktLen--;
 		CC1101ReadMultiReg(CC1101_RXFIFO, rxBuffer, pktLen); // Pull data
 		CC1101ReadMultiReg(CC1101_RXFIFO, status, 2);        // Read  status bytes
 
@@ -439,7 +443,7 @@ OUTPUT   : None
 */
 void CC1101Init(void)
 {
-	volatile uint8_t i;//, j;
+	volatile uint8_t i, j;
 	
 	GPIO_InitTypeDef GPIO_InitStructure;
  	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);    //使能PORTA时钟
@@ -456,20 +460,20 @@ void CC1101Init(void)
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	/*Configure GPIO pin Output Level */
 	GPIO_SetBits(GPIOA, GPIO_Pin_4);
-	delay_ms(150);
+	delay_ms(10);
 	
 	CC1101Reset();    
 	
-	for(i = 0; i < 22; i++)
+	for(i = 0; i < 23; i++)
 	{
 		CC1101WriteReg(CC1101InitData[i][0], CC1101InitData[i][1]);
 	}
-// 测试CC1101 SPI通信是否正常
-//	for(i = 0; i < 22; i++)
-//	{
-//		j = CC1101ReadReg(CC1101InitData[i][0]);
-//		printf(" %d  ", (int)j);
-//	}
+    // 测试CC1101 SPI通信是否正常
+	for(i = 0; i < 23; i++)
+	{
+		j = CC1101ReadReg(CC1101InitData[i][0]);
+		printf(" %d  ", (int)j);
+	}
 	
 #if (WORK_MODE == TX)	
 	CC1101SetAddress(TX_Address, BROAD_0AND255);
@@ -477,18 +481,20 @@ void CC1101Init(void)
 	CC1101SetAddress(RX_Address, BROAD_0AND255);
 #endif
 	
-	CC1101SetSYNC(0x8799);                // 8799
-	CC1101WriteReg(CC1101_MDMCFG1, 0x72); // Modem Configuration    0x22
-//	CC1101WriteReg(CC1101_MDMCFG0, 0xF8);
+	CC1101SetSYNC(0xD391);                // 8799
+	CC1101WriteReg(CC1101_MDMCFG1, 0x22); // Modem Configuration    0x22
+	CC1101WriteReg(CC1101_MDMCFG0, 0xF8);
 	
-	CC1101WriteMultiReg(CC1101_PATABLE, PaTabel+1, 1);  // 功率
-//	CC1101WriteMultiReg(CC1101_PATABLE, PaTabel, 8);
+//	CC1101WriteMultiReg(CC1101_PATABLE, PaTabel+1, 1);  // 功率
+	CC1101WriteMultiReg(CC1101_PATABLE, PaTabel, 8);
 
-	i = CC1101ReadStatus(CC1101_PARTNUM);//for test, must be 0x80
-	printf("\r\n%d  ", (int)i);
+//	i = CC1101ReadStatus(CC1101_PARTNUM);//for test, must be 0x80
+//	printf("\r\n%d  ", (int)i);
+//	
+//	i = CC1101ReadStatus(CC1101_VERSION);//for test, refer to the datasheet
+//	printf("%d\r\n", (int)i);
 	
-	i = CC1101ReadStatus(CC1101_VERSION);//for test, refer to the datasheet
-	printf("%d\r\n", (int)i);
+	delay_ms(20);
 }
 
 // 获取RSSI值

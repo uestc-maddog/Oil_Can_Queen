@@ -12,12 +12,17 @@ u8 atk_8266_wifisend_data(u8 *Wifi_Data)
 	u8 constate = 0;	                  // 连接状态
 	u8 *p = mymalloc(32);			      // 申请32字节内存
 	
-	for(i = 0; i < 2; i++) constate = atk_8266_consta_check();        // 得到连接状态
+	for(i = 0; i < 2; i++) 
+	{
+		delay_ms(20);
+		constate = atk_8266_consta_check(); // 得到连接状态
+	}
+	//constate = '+';
 	if(constate=='+')  
 	{
 		printf("连接成功 ");
 		atk_8266_quit_trans();
-		atk_8266_send_cmd((u8 *)"AT+CIPSEND",(u8 *)"OK",(u16)20);     // 开始透传   
+		atk_8266_send_cmd((u8*)"AT+CIPSEND",(u8*)"OK",20);  // 开始透传   
 		
 		sprintf((char*)p,"%s\r\n",Wifi_Data);         
 		u2_printf("%s",p);                           // 发送数据

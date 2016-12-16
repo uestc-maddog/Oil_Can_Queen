@@ -4,7 +4,7 @@
 #include "sys.h"
 #include "cc1101_REG.h"
 
-#define RX_Address 0xff         // 接收端 设备地址
+#define RX_Address 0xff                // 接收端 设备地址    1101网内设备地址
 
 #define TX_Address 0x01         // 发送端1 设备地址
 //#define TX_Address 0x02         // 发送端2 设备地址
@@ -40,7 +40,7 @@ you must offer the following functions for this module
 #define PORT_CC_IRQ     GPIOA                   // 通过ADC采集该脚电压可测温度
 #define PIN_CC_IRQ      GPIO_Pin_8
 	                                                             //当CSN变低，MCU必须等待MISO脚变低（表明电压调制器已经稳定，晶体正在运作中）								
-#define CC_CSN_LOW()    GPIO_ResetBits(PORT_CC_CSN, PIN_CC_CSN); while(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_6) != 0)   // SPI_MISO
+#define CC_CSN_LOW()    GPIO_ResetBits(PORT_CC_CSN, PIN_CC_CSN);while(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_6) != 0)   // SPI_MISO
 #define CC_CSN_HIGH()   GPIO_SetBits(PORT_CC_CSN, PIN_CC_CSN)
 
 #define CC_IRQ_READ()   GPIO_ReadInputDataBit(PORT_CC_IRQ, PIN_CC_IRQ)
