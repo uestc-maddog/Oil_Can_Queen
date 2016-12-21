@@ -421,7 +421,7 @@ uint8_t CC1101RecPacket(uint8_t *rxBuffer)
 		{
 			x = CC1101ReadReg(CC1101_RXFIFO);
 		}
-		if(pktLen <= 0 || pktLen > 30) return 0;
+		if(pktLen <= 0 || pktLen > 15) return 0;
 		else                           pktLen--;
 		CC1101ReadMultiReg(CC1101_RXFIFO, rxBuffer, pktLen); // Pull data
 		CC1101ReadMultiReg(CC1101_RXFIFO, status, 2);        // Read  status bytes

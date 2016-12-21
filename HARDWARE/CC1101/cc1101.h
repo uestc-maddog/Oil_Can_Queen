@@ -6,7 +6,7 @@
 
 #define RX_Address 0xff                // 接收端 设备地址    1101网内设备地址
 
-#define TX_Address 0x01         // 发送端1 设备地址
+#define TX_Address 0x01           // 发送端1 设备地址
 //#define TX_Address 0x02         // 发送端2 设备地址
 //#define TX_Address 0x03         // 发送端3 设备地址
 //#define TX_Address 0x04         // 发送端4 设备地址
@@ -17,7 +17,7 @@
 #define TX 1                    // 发送
 #define RX 0                    // 接收
 #define ACK_LENGTH      5       // 应答信号长度       
-#define SEND_LENGTH     14      // 发送数据包长度
+#define SEND_LENGTH     6      // 发送数据包长度
 #define SEND_GAP        1000    // 间隔1s发送一次数据
 #define RECV_TIMEOUT    1500    // 接收超时
 
