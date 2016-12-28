@@ -7,22 +7,22 @@
 //用户配置区
 
 //连接端口号:8080,可自行修改为其他端口.
-const u8* remote_ip = (u8*)"192.168.191.1";	
-//const u8* remote_ip = (u8*)"123.207.37.14";	
+//const u8* remote_ip = (u8*)"192.168.191.1";	
+const u8* remote_ip = (u8*)"123.207.37.14";	
 const u8* portnum   = (u8*)"8080";	 
 
 //WIFI STA模式,设置要去连接的路由器无线参数,请根据你自己的路由器设置,自行修改.
-u8* wifista_ssid = (u8*)"Growl";       // 路由器SSID号
-//u8* wifista_ssid = (u8*)"MadDog";        // 路由器SSID号
+//u8* wifista_ssid = (u8*)"Growl";       // 路由器SSID号
+u8* wifista_ssid = (u8*)"MadDog";        // 路由器SSID号
 
 extern u8 Link_Flag;                   // 标记已建立过连接，可直接连入上次选择的wifi
-volatile u8 PWD_Temp[15] = {'1','4','7','2','5','8','3','6','9',0};       // 密码输入缓存
-//volatile u8 PWD_Temp[15] = {'1','2','3','4','a','b','c','d',0};             // 密码输入缓存
+//volatile u8 PWD_Temp[15] = {'1','4','7','2','5','8','3','6','9',0};       // 密码输入缓存
+volatile u8 PWD_Temp[15] = {'1','2','3','4','a','b','c','d',0};             // 密码输入缓存
 
 volatile u8 PWD_Index = 0;             // 标记当前密码长度
 
 volatile u8 IP_Temp[16] = {0,};        // 密码输入缓存
-volatile u8 IP_Index = 0;              // 标记当前IP长度
+volatile u8 IP_Index = 0;                                                                                         // 标记当前IP长度
 
 volatile u8 Pnum_Temp[7] = {0,};       // 密码输入缓存
 volatile u8 Pnum_Index = 0;            // 标记当前IP长度

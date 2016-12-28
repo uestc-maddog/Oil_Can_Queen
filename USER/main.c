@@ -16,16 +16,14 @@
 const u32 Queen_ID = 0x12131415;         // 32位ID   
 
 volatile u16 Time_1ms = 0;               // 1ms计数器  接收方应答超时检测
-u16 SendCnt = 0;
-u16 RecvCnt = 0;
 volatile int RecvWaitTime = 0;           // 接收等待超时时间
 
 u8 Link_Flag = 0;                        // 标记已建立过连接，可直接连入上次选择的wifi
 
-                           // 帧头  源地址  目标地址 distance*10  帧尾2B
-u8 SendBuffer[SEND_LENGTH] = {0x55,   0,    0xff,    15,          0x0d, 0x0a};  // 从机待发送数据
-                           // 帧头  源地址  目标地址  帧尾2B
-u8 AckBuffer[ACK_LENGTH]   = {0x55,  0xff,     0,     0x0d, 0x0a};                                              // 主机应答数据
+                           // 帧头  源地址  目标地址 distance*10  帧尾
+u8 SendBuffer[SEND_LENGTH] = {0x55,   0,    0xff,    15,          0xaa};  // 从机待发送数据
+                           // 帧头  源地址  目标地址  帧尾
+u8 AckBuffer[ACK_LENGTH]   = {0x55,  0xff,     0,     0xaa};              // 主机应答数据
 
 volatile u8 Str_Info[20];  // 从机数据包中的 有效数据
 
@@ -52,19 +50,24 @@ int main(void)
 	
 	printf("Oil_Can_Queen\r\n");
 	atk_8266_init();                                 // ATK-ESP8266模块初始化配置函数	
-		
 	printf("atk_8266_init OK!\r\n");
-
 	ID = mymalloc(32);							     // 申请32字节内存
 	sprintf((char*)ID, "Queen_ID: %x Connected.", Queen_ID);
 	atk_8266_wifisend_data((u8*)ID);                 // 传送Queen_ID到TCP服务器
 	myfree(ID);		                                 // 释放内存 
 	printf("Mode:RX\r\n");
  
-	//CC1101Init(); 
+	CC1101Init(); 
+	
+	// 固定数据
+	Str_Info[0] = 0x23;                          // TCP包头
+	Str_Info[1] = Queen_ID >> 24;                // Queen_ID
+	Str_Info[2] = Queen_ID >> 16;                // Queen_ID
+	Str_Info[3] = Queen_ID >> 8;                 // Queen_ID
+	Str_Info[4] = Queen_ID & 0xff;               // Queen_ID
 	while(1)
 	{
-		CC1101Init(); 
+//		CC1101Init(); 
 		res = RF_RecvHandler();                                 // 无线数据接收处理 
 		if(res != 0) printf("Rec ERROR:%d\r\n", (int)res);      // 接收错误
 		else                                                    // 接收成功
@@ -226,60 +229,53 @@ uint8_t RF_SendPacket(uint8_t *Sendbuffer, uint8_t length)
 			4：数据包目标地址错误
 			5：数据包帧尾错误
 			6：接收超时
+			7: 接收缓存数组越界
 ============================================================================*/
 uint8_t RF_RecvHandler(void)
 {
-	uint8_t i = 0, j = 0, length = 0;    // recv_buffer[30] = {0};
-	u8 *recv_buffer = mymalloc(15);	     // 申请30字节内存
+	uint8_t i = 0, length = 0;    // recv_buffer[10] = {0};
+	u8 *recv_buffer = mymalloc(10);	     // 申请10字节内存
+	
+	for(i=0; i<SEND_LENGTH; i++) recv_buffer[i] = 0;  // 数据清零,防止误判
+	RecvWaitTime = 40;                   // 等待应答超时限制40ms  正常情况10ms之内会完成
 	
 	CC1101SetTRMode(RX_MODE);            // 接收模式 
-	delay_ms(1);
-	
 	printf("waiting...\r\n");
 	while(CC_IRQ_READ() != 0);           // 等待接收数据包
-	printf("waiting1...\r\n");
+	//printf("waiting1...\r\n");
 	
-	RecvWaitTime = 40;                   // 等待应答超时限制40ms  正常情况10ms之内会完成
 	TIM3_Set(1);                         // 开启定时器TIM3
 	while(CC_IRQ_READ() == 0)
 	{
 		if(RecvWaitTime <= 0)      
 		{  
 			TIM3_Set(0);                              // 关闭定时器TIM3
-			printf("waiting2...\r\n");
 			return 6;                                 // 等待应答超时   
 		}
 	}
 	TIM3_Set(0);                                      // 关闭定时器TIM3
-	printf("RecvWaitTime1=%d\r\n", RecvWaitTime);     // 正常情况10ms之内会完成
+	//printf("RecvWaitTime1=%d\r\n", RecvWaitTime);     // 正常情况10ms之内会完成
 	
-	for(i=0; i<SEND_LENGTH; i++) recv_buffer[i] = 0;  // 数据清零,防止误判
 	length = CC1101RecPacket(recv_buffer);            // 读取接受到的数据长度和数据内容
 
-//                           // 帧头  源地址  目标地址 distance:1B) 帧尾2B
-//u8 SendBuffer[SEND_LENGTH] = {0x55,   0,    0xff,    15,          0x0d, 0x0a};  // 从机待发送数据
+//                           // 帧头  源地址  目标地址 distance:1B) 帧尾
+//u8 SendBuffer[SEND_LENGTH] = {0x55,   0,    0xff,    15,          0xaa};  // 从机待发送数据
 //                           // 帧头  源地址  目标地址  帧尾2B
-//u8 AckBuffer[ACK_LENGTH]   = {0x55,  0xff,     0,     0x0d, 0x0a};         
-//	if((strlen((const char*)recv_buffer) <= 0) || (strlen((const char*)recv_buffer)) > 29)  
-//	{
-//		CC1101Init(); 
-//		printf("length0=%d\r\n", length);
-//		myfree(recv_buffer);		//释放内存
-//		return 1;                                              // 数据包长度错误
-//	}
-	printf("strlen(recv_buffer)=%d\r\n", (int)strlen((const char*)recv_buffer));
+//u8 AckBuffer[ACK_LENGTH]   = {0x55,  0xff,     0,     0xaa};         
+
+	//printf("strlen(recv_buffer)=%d\r\n", (int)strlen((const char*)recv_buffer));
 	
-	if(length <= 0 || length > 15)     // 数组越界处理
+	if(length <= 0 || length > 10)     // 数组越界处理
 	{
 		CC1101Init(); 
-		printf("length1=%d\r\n", length);
+		//printf("length1=%d\r\n", length);
 		myfree(recv_buffer);		//释放内存
-		return 1;                                              // 数据包长度错误
+		return 7;                                              // 数据包长度错误
 	}
 	if(length != SEND_LENGTH)  
 	{
 		CC1101Init(); 
-		printf("length2=%d\r\n", length);
+		//printf("length2=%d\r\n", length);
 		myfree(recv_buffer);		// 释放内存
 		return 1;                   // 数据包长度错误
 	}
@@ -298,35 +294,26 @@ uint8_t RF_RecvHandler(void)
 		myfree(recv_buffer);		// 释放内存
 		return 4;                   // 数据包目标地址错误
 	}
-	if((recv_buffer[length-2] != 0x0d) || (recv_buffer[length-1] != 0x0a)) 
+	if(recv_buffer[4] != 0xaa)
 	{
 		myfree(recv_buffer);		// 释放内存
 		return 5;                   // 数据包帧尾错误
 	}
 	
 	// 数据接收正确  提取出从机数据包中的有效数据到  Str_Info 中    从机地址+有效数据
-	j = 0;
-	Str_Info[j++] = 0x23;                          // TCP包头
-	Str_Info[j++] = Queen_ID >> 24;                // Queen_ID
-	Str_Info[j++] = Queen_ID >> 16;                // Queen_ID
-	Str_Info[j++] = Queen_ID >> 8;                 // Queen_ID
-	Str_Info[j++] = Queen_ID & 0xff;               // Queen_ID
-	Str_Info[j++] = recv_buffer[1];                // 从机地址   Drone_ID
-	Str_Info[j++] = recv_buffer[3];                // Distance    单位：cm
-	Str_Info[j] = 0;                               // 添加字符串结束符
-//	for(i = 3; i < (length-2); i++, j++)           // 有效数据             
-//	{
-//		Str_Info[j] = recv_buffer[i];
-//	}
-	printf("Rec from:%d\r\n", (int)Str_Info[0]);        // 显示从机地址
-	printf("Str_length=%d; Str_Info:%s; RSSI=%d dB\r\n", (int)strlen((const char*)Str_Info), Str_Info, (int)Get_1101RSSI());
+	Str_Info[5] = recv_buffer[1];                // 从机地址   Drone_ID
+	Str_Info[6] = recv_buffer[3];                // Distance   单位：cm
+	Str_Info[7] = 0;                               // 添加字符串结束符
+
+	printf("Rec from:%d Distance:%dcm\r\n", (int)Str_Info[5], (int)Str_Info[6]);        // 显示从机地址
+	//printf("Str_length=%d; Str_Info:%s; RSSI=%d dB\r\n", (int)strlen((const char*)Str_Info), Str_Info, (int)Get_1101RSSI());
 	
 	// 主机向从机回发应答信号    ！！！！！必须要，否则接收状态将接收不到数据！！！！！
 	CC1101SetTRMode(TX_MODE);  
-	AckBuffer[2] = recv_buffer[1];        // 从机地址
+	AckBuffer[2] = Str_Info[5];        // 从机地址
 	CC1101SendPacket(AckBuffer, ACK_LENGTH, ADDRESS_CHECK);
 	
-	printf("%d:Ack to %d OK\r\n", (int)++RecvCnt, (int)AckBuffer[2]);
+	printf("Ack to %d OK\r\n", (int)Str_Info[5]);
 
 	myfree(recv_buffer);		//释放内存
 	return 0;
