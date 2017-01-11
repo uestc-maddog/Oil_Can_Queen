@@ -37,13 +37,15 @@ you must offer the following functions for this module
 #define PORT_CC_CSN     GPIOA
 #define PIN_CC_CSN      GPIO_Pin_4        
 
-#define PORT_CC_IRQ     GPIOA                   // 通过ADC采集该脚电压可测温度
-#define PIN_CC_IRQ      GPIO_Pin_8
+#define PORT_CC_IRQ     GPIOC                   // 通过ADC采集该脚电压可测温度
+#define PIN_CC_IRQ      GPIO_Pin_4
 	                                                             //当CSN变低，MCU必须等待MISO脚变低（表明电压调制器已经稳定，晶体正在运作中）								
 #define CC_CSN_LOW()    GPIO_ResetBits(PORT_CC_CSN, PIN_CC_CSN);while(GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_6) != 0)   // SPI_MISO
 #define CC_CSN_HIGH()   GPIO_SetBits(PORT_CC_CSN, PIN_CC_CSN)
 
 #define CC_IRQ_READ()   GPIO_ReadInputDataBit(PORT_CC_IRQ, PIN_CC_IRQ)
+
+extern volatile u8 CC_IRQ_Flag;          // CC1101数据包接收信号标志
 
 /*===========================================================================
 ----------------------------------macro definitions--------------------------
@@ -71,6 +73,7 @@ uint8_t SPI_ExchangeByte(uint8_t Data);
 void  CC1101SetTRMode(TRMODE mode);      // Set the device as TX mode or RX mode*/
 uint8_t Get_1101RSSI(void);              // 获取RSSI值
 
+void EXTI4_Set(u8 en);                   // EXTI4外部中断开关  en:1,使能; 0,屏蔽;  
 void TIM3_Set(u8 sta);
 void TIM3_Init(u16 arr,u16 psc);
 	

@@ -3,26 +3,24 @@
 #include "stdio.h"
 #include "lcd.h"
 #include "touch.h"	
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////// 
 //用户配置区
-
-//连接端口号:8080,可自行修改为其他端口.
-//const u8* remote_ip = (u8*)"192.168.191.1";	
-const u8* remote_ip = (u8*)"123.207.37.14";	
 const u8* portnum   = (u8*)"8080";	 
 
-//WIFI STA模式,设置要去连接的路由器无线参数,请根据你自己的路由器设置,自行修改.
-//u8* wifista_ssid = (u8*)"Growl";       // 路由器SSID号
-u8* wifista_ssid = (u8*)"MadDog";        // 路由器SSID号
+//const u8* remote_ip = (u8*)"192.168.191.1";	
+//u8* wifista_ssid = (u8*)"Growl";       
+//volatile u8 PWD_Temp[15] = {'1','4','7','2','5','8','3','6','9',0};       
 
-extern u8 Link_Flag;                   // 标记已建立过连接，可直接连入上次选择的wifi
-//volatile u8 PWD_Temp[15] = {'1','4','7','2','5','8','3','6','9',0};       // 密码输入缓存
-volatile u8 PWD_Temp[15] = {'1','2','3','4','a','b','c','d',0};             // 密码输入缓存
+const u8* remote_ip = (u8*)"123.207.37.14";	
+u8* wifista_ssid = (u8*)"MadDog";        
+volatile u8 PWD_Temp[15] = {'1','2','3','4','a','b','c','d',0};             
+                                                                                                                                            
+extern u8 Link_Flag;                   // wifi已连接,用户输入后自动连接wifi
+volatile u8 PWD_Index = 0;             // 密码输入缓存
 
-volatile u8 PWD_Index = 0;             // 标记当前密码长度
-
-volatile u8 IP_Temp[16] = {0,};        // 密码输入缓存
-volatile u8 IP_Index = 0;                                                                                         // 标记当前IP长度
+volatile u8 IP_Temp[16] = {0,};        // IP输入缓存
+volatile u8 IP_Index = 0;              // 标记当前IP长度
 
 volatile u8 Pnum_Temp[7] = {0,};       // 密码输入缓存
 volatile u8 Pnum_Index = 0;            // 标记当前IP长度
@@ -165,7 +163,7 @@ u8 atk_8266_apsta_check(void)
 {
 	if(atk_8266_quit_trans())return 0;			//退出透传 
 	atk_8266_send_cmd((u8*)"AT+CIPSTATUS",(u8*)":",80);	//发送AT+CIPSTATUS指令,查询连接状态
-	if(atk_8266_check_cmd((u8*)"+CIPSTATUS:0") &&	atk_8266_check_cmd((u8*)"+CIPSTATUS:1") && atk_8266_check_cmd((u8*)"+CIPSTATUS:2") &&	atk_8266_check_cmd((u8*)"+CIPSTATUS:4"))
+	if(atk_8266_check_cmd((u8*)"+CIPSTATUS:0") && atk_8266_check_cmd((u8*)"+CIPSTATUS:1") && atk_8266_check_cmd((u8*)"+CIPSTATUS:2") &&	atk_8266_check_cmd((u8*)"+CIPSTATUS:4"))
 				return 0;
 	else  return 1;
 }
@@ -178,7 +176,7 @@ u8 atk_8266_consta_check(void)
 	if(atk_8266_quit_trans())return 0;			        // 退出透传 
 	atk_8266_send_cmd((u8*)"AT+CIPSTATUS",(u8*)":",50);	// 发送AT+CIPSTATUS指令,查询连接状态
 	p=atk_8266_check_cmd((u8*)"+CIPSTATUS:");           // +CIPSTATUS:后为id号
-	res=*p;									//得到连接状态	
+	res=*p;									            // 得到连接状态	
 	return res;
 }
 
@@ -229,18 +227,20 @@ void atk_8266_init(void)
 	delay_ms(1000);         //延时3S等待重启成功
 	delay_ms(1000);
 	delay_ms(1000);
-	delay_ms(1000);
+	delay_ms(800);
 
-	// 用户手动连接wifi
-//	while(1)
-//	{
-//		if(Link_Flag == 1) break;  // 已建立过连接，可直接连入上次选择的wifi
-//		if(AP_Choose() == 0)       // 成功选择wifi
-//		{
-//			PWD_Index = 0;                 // 标记当前密码长度
-//			if(Enter_AP_PWD() == 0) break; // 成功输入密码
-//		}
-//	}
+	/*************************用户手动连接wifi*********************************/
+	while(1)
+	{
+		if(Link_Flag == 1) break;  // 已建立过连接，可直接连入上次选择的wifi
+		if(AP_Choose() == 0)       // 成功选择wifi
+		{
+			PWD_Index = 0;                 // 标记当前密码长度
+			if(Enter_AP_PWD() == 0) break; // 成功输入密码
+		}
+	}
+	/*************************用户手动连接wifi*********************************/
+	
 	
 	//设置连接到的WIFI网络名称/加密方式/密码,这几个参数需要根据您自己的路由器设置进行修改!! 
 	//printf("\r\n%s %s\r\n",wifista_ssid,wifista_password); //打印无线参数:ssid,密码
@@ -275,7 +275,7 @@ void atk_8266_init(void)
 	delay_ms(650);
 	//TCP
 //	IP_Temp[0] = 0;        // 密码输入缓存
-//    IP_Index = 0;          // 标记当前IP长度
+//    IP_Index = 0;        // 标记当前IP长度
 //	if(Enter_TCP_IP())   goto wifi_scan;        // 输入IP及端口失败
 	
 	printf("正在连接TCP服务器 %s:%s\r\n", (u8*)remote_ip, (u8*)portnum);

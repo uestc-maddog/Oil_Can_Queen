@@ -203,14 +203,131 @@ u8 TP_Scan(u8 tp)
 	return tp_dev.sta&TP_PRES_DOWN;//返回当前的触屏状态
 }	  
 
+//xfac = 0.064062
+//xoff = -8.891739
+//yfac = 0.089314
+//yoff = -14.118011
+#if TP_Mode == TP_Adj             // 触摸校准模式
+
+//校准点参数：(0,1)与(2,3)，(0,2)与(1,3),(1,2)与(0,3)，这三组点的距离
+const u8 TP_ADJDIS_TBL[3][4]={{0,1,2,3},{0,2,1,3},{1,2,0,3}};//校准距离计算表
+//触摸屏校准代码
+//得到四个校准参数
+void TP_Adjust(void)
+{								 
+	u16 pos_temp[4][2];//坐标缓存值
+	u8  cnt=0;	
+	u16 d1,d2;
+	u32 tem1,tem2;
+	float fac; 	
+	u16 outtime=0; 	  
+	LCD_Clear(WHITE);	//清屏 	    
+	POINT_COLOR=BLUE;	//蓝色
+//	LCD_ShowString(40,40,160,100,16,(u8*)TP_REMIND_MSG_TBL);//显示提示信息
+	TP_Drow_Touch_Point(20,20,RED);//画点1 
+	tp_dev.sta=0;//消除触发信号 
+	tp_dev.xfac=0;//xfac用来标记是否校准过,所以校准之前必须清掉!以免错误	 
+	while(1)//如果连续10秒钟没有按下,则自动退出
+	{
+READJ:
+		tp_dev.scan(1);//扫描物理坐标
+		if((tp_dev.sta&0xc0)==TP_CATH_PRES)//按键按下了一次(此时按键松开了.)
+		{	
+			outtime=0;		
+			tp_dev.sta&=~(1<<6);	//标记按键已经被处理过了. 
+			pos_temp[cnt][0]=tp_dev.x[0];
+			pos_temp[cnt][1]=tp_dev.y[0];
+			cnt++;	  
+			switch(cnt)
+			{			   
+				case 1:						 
+					TP_Drow_Touch_Point(20,20,WHITE);				//清除点1 
+					TP_Drow_Touch_Point(lcddev.width-20,20,RED);	//画点2
+					break;
+				case 2:
+ 					TP_Drow_Touch_Point(lcddev.width-20,20,WHITE);	//清除点2
+					TP_Drow_Touch_Point(20,lcddev.height-20,RED);	//画点3
+					break;
+				case 3:
+ 					TP_Drow_Touch_Point(20,lcddev.height-20,WHITE);			//清除点3
+ 					TP_Drow_Touch_Point(lcddev.width-20,lcddev.height-20,RED);	//画点4
+					break;                                                                                                                                                                                                                                                          
+				case 4:	 //全部四个点已经得到
+					for(cnt=0;cnt<3;cnt++)//计算三组点的距离是否在允许范围内？
+					{ 
+						tem1=abs(pos_temp[TP_ADJDIS_TBL[cnt][0]][0]-pos_temp[TP_ADJDIS_TBL[cnt][1]][0]);//x1-x2/x1-x3/x2-x3
+						tem2=abs(pos_temp[TP_ADJDIS_TBL[cnt][0]][1]-pos_temp[TP_ADJDIS_TBL[cnt][1]][1]);//y1-y2/y1-y3/y2-y3
+						tem1*=tem1;
+						tem2*=tem2;
+						d1=sqrt(tem1+tem2);//得到两点之间的距离 
+						tem1=abs(pos_temp[TP_ADJDIS_TBL[cnt][2]][0]-pos_temp[TP_ADJDIS_TBL[cnt][3]][0]);//x3-x4/x2-x4/x1-x4
+						tem2=abs(pos_temp[TP_ADJDIS_TBL[cnt][2]][1]-pos_temp[TP_ADJDIS_TBL[cnt][3]][1]);//y3-y4/y2-y4/y1-y4
+						tem1*=tem1;
+						tem2*=tem2;
+						d2=sqrt(tem1+tem2);//得到两点之间的距离
+						fac=(float)d1/d2;
+						if(fac<0.95||fac>1.05||d1==0||d2==0)//不合格
+						{
+							cnt=0;
+							TP_Drow_Touch_Point(lcddev.width-20,lcddev.height-20,WHITE);	//清除点4
+							TP_Drow_Touch_Point(20,20,RED);									//画点1
+							//TP_Adj_Info_Show(pos_temp[0][0],pos_temp[0][1],pos_temp[1][0],pos_temp[1][1],pos_temp[2][0],pos_temp[2][1],pos_temp[3][0],pos_temp[3][1],fac*100);//显示数据   
+							goto READJ;	//不合格，重新校准
+						}
+					}  
+					//正确了
+					//计算结果
+					tp_dev.xfac=(float)(lcddev.width-40)/(pos_temp[1][0]-pos_temp[0][0]);//得到xfac		 
+					tp_dev.xoff=(lcddev.width-tp_dev.xfac*(pos_temp[1][0]+pos_temp[0][0]))/2;//得到xoff
+ 					tp_dev.yfac=(float)(lcddev.height-40)/(pos_temp[2][1]-pos_temp[0][1]);//得到yfac
+					tp_dev.yoff=(lcddev.height-tp_dev.yfac*(pos_temp[2][1]+pos_temp[0][1]))/2;//得到yoff  
+					
+					
+					printf("xfac = %.6f\r\n", tp_dev.xfac);
+					printf("xoff = %.6f\r\n", tp_dev.xoff);
+					printf("yfac = %.6f\r\n", tp_dev.yfac);
+					printf("yoff = %.6f\r\n", tp_dev.yoff);
+					
+					if(abs(tp_dev.xfac)>2||abs(tp_dev.yfac)>2)//触屏和预设的相反了.
+					{
+						cnt=0;
+ 				    	TP_Drow_Touch_Point(lcddev.width-20,lcddev.height-20,WHITE);	//清除点4
+   	 					TP_Drow_Touch_Point(20,20,RED);								//画点1
+						LCD_ShowString(40,26,lcddev.width,lcddev.height,16,"TP Need readjust!");
+						tp_dev.touchtype=!tp_dev.touchtype;//修改触屏类型.
+						if(tp_dev.touchtype)//X,Y方向与屏幕相反
+						{
+							CMD_RDX=0X90;
+							CMD_RDY=0XD0;	 
+						}else				   //X,Y方向与屏幕相同
+						{
+							CMD_RDX=0XD0;
+							CMD_RDY=0X90;	 
+						}			    
+						continue;
+					}		
+					POINT_COLOR=BLUE;
+					LCD_Clear(WHITE);//清屏
+					LCD_ShowString(35,110,lcddev.width,lcddev.height,16,"Touch Screen Adjust OK!");//校正完成
+					delay_ms(1000);
+					//TP_Save_Adjdata();  
+ 					LCD_Clear(WHITE);//清屏   
+					return;//校正完成				 
+			}
+		}
+		delay_ms(10);
+ 	}
+}	  
+
+#else
 //触摸屏校准代码
 //得到四个校准参数
 void TP_Adjust(void)
 {									
-	tp_dev.xfac = 0.064267f;	   // 触摸屏参数
-	tp_dev.xoff = -12.293335;
-	tp_dev.yfac = 0.085627f;
-	tp_dev.yoff = -17.179489;
+	tp_dev.xfac = 0.064350f;	   // 触摸屏参数
+	tp_dev.xoff = -8.635773;
+	tp_dev.yfac = 0.089200f;
+	tp_dev.yoff = -15.323349;
 	
 //	printf("xfac = %.6f\r\n", tp_dev.xfac);
 //	printf("xoff = %.6f\r\n", tp_dev.xoff);
@@ -220,6 +337,8 @@ void TP_Adjust(void)
 	CMD_RDX=0XD0;
 	CMD_RDY=0X90;	 
 }	  
+
+#endif
 
 //触摸屏初始化  		    
 //返回值:0,没有进行校准
@@ -231,7 +350,7 @@ u8 TP_Init(void)
 	//注意,时钟使能之后,对GPIO的操作才有效
 	//所以上拉之前,必须使能时钟.才能实现真正的上拉输出
 
-	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC  | RCC_APB2Periph_AFIO, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC | RCC_APB2Periph_AFIO, ENABLE);
 
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3|GPIO_Pin_0|GPIO_Pin_13;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;  

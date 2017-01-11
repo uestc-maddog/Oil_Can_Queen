@@ -11,6 +11,7 @@
 #include "cc1101.h"
 #include "touch.h"	
 #include "spi.h"
+#include "key.h"
 #include "usart2.h"	
 
 const u32 Queen_ID = 0x12131415;         // 32位ID   
@@ -29,45 +30,16 @@ volatile u8 Str_Info[20];  // 从机数据包中的 有效数据
 
 u8 RF_SendPacket(uint8_t *Sendbuffer, uint8_t length);     // 无线发送数据函数  
 u8 RF_RecvHandler(void);                                   // 无线数据接收处理 
-	
+void Sys_Init(void);                                       // Oil_Can Queen 系统初始化 
+
+
 int main(void)
 { 
 	u8 Link_Error = 0, res = 0;
-	u8 *ID;
 	
-	delay_init();	    	                         // 延时函数初始化
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);  // 设置NVIC中断分组2:2位抢占优先级，2位响应优先级	  
-	uart_init(115200);	 	                         // 初始化串口1波特率为115200	调试
-	USART2_Init(115200);                             // 初始化串口2波特率为115200   wifi
-	
-	LCD_Init();				                         // 初始化液晶 		
-	LCD_ShowString(25,150,200,24,24,(u8*)"wifi scanning..."); 
-	tp_dev.init();			                         // 初始化触摸屏
-	
-	SPI1_Init();                                     // CC1101 SPI通信初始化
-	TIM3_Init(99,7199);		                         // CC1101 1ms中断
-	mem_init();                                      // 初始化内存池
-	
-	printf("Oil_Can_Queen\r\n");
-	atk_8266_init();                                 // ATK-ESP8266模块初始化配置函数	
-	printf("atk_8266_init OK!\r\n");
-	ID = mymalloc(32);							     // 申请32字节内存
-	sprintf((char*)ID, "Queen_ID: %x Connected.", Queen_ID);
-	atk_8266_wifisend_data((u8*)ID);                 // 传送Queen_ID到TCP服务器
-	myfree(ID);		                                 // 释放内存 
-	printf("Mode:RX\r\n");
- 
-	CC1101Init(); 
-	
-	// 固定数据
-	Str_Info[0] = 0x23;                          // TCP包头
-	Str_Info[1] = Queen_ID >> 24;                // Queen_ID
-	Str_Info[2] = Queen_ID >> 16;                // Queen_ID
-	Str_Info[3] = Queen_ID >> 8;                 // Queen_ID
-	Str_Info[4] = Queen_ID & 0xff;               // Queen_ID
+	Sys_Init();
 	while(1)
 	{
-//		CC1101Init(); 
 		res = RF_RecvHandler();                                 // 无线数据接收处理 
 		if(res != 0) printf("Rec ERROR:%d\r\n", (int)res);      // 接收错误
 		else                                                    // 接收成功
@@ -97,7 +69,6 @@ int main(void)
 	}
 }
 
-
 // wifi测试程序
 //	while(1)    // 持续发送，直到发送成功！
 //	{
@@ -110,57 +81,6 @@ int main(void)
 //		}
 //		delay_ms(500);delay_ms(500);delay_ms(500);
 //	}
-
-//int main(void)
-//{
-//	uint8_t res = 0;
-//	
-//  HAL_Init();
-//  SystemClock_Config();
-
-//  MX_GPIO_Init();
-//	MX_USART1_UART_Init();
-//	MX_TIM3_Init();
-//  MX_SPI1_Init();	
-//	
-//	CC1101Init();                                   // 初始化L01寄存器     
-
-//#if (WORK_MODE == TX)     // 执行发送模块程序
-//	
-//	SendBuffer[0] = TX_Address;  // 数据包首字节标记源地址
-//	printf("Mode:TX\r\n");
-//	CC1101SetTRMode(TX_MODE);    // 发送模式  
-//	while(1)
-//	{
-//		res = RF_SendPacket(SendBuffer, SEND_LENGTH);
-//		if(res == 1)         // 发送数据包成功
-//		{
-//			SendCnt++;
-//			printf("Send OK\r\n\r\n");
-//		}
-//		else if(res == 2)    // 应答超时
-//		{
-//			SendCnt++;
-//			printf("Ack ERROR\r\n\r\n");
-//		}
-//		else
-//		{
-//			printf("Send ERROR\r\n\r\n");
-//		}
-//		HAL_Delay(1000);HAL_Delay(1000);HAL_Delay(1000);HAL_Delay(800);
-//	}
-//	
-//#else                     // 执行接收模块程序
-//	
-//	AckBuffer[0] = RX_Address;  // 数据包首字节标记源地址
-//	printf("Mode:RX\r\n");
-//	CC1101SetTRMode(RX_MODE);   // 接收模式  
-//	while(1)
-//	{
-//		RF_RecvHandler();     // 无线数据接收处理 
-//	}
-//	
-//#endif
 
 /*===========================================================================
 * 函数 : RF_SendPacket() => 无线发送数据函数                            *
@@ -235,15 +155,40 @@ uint8_t RF_RecvHandler(void)
 {
 	uint8_t i = 0, length = 0;    // recv_buffer[10] = {0};
 	u8 *recv_buffer = mymalloc(10);	     // 申请10字节内存
+	u16 Wait_Timer = 0;
 	
 	for(i=0; i<SEND_LENGTH; i++) recv_buffer[i] = 0;  // 数据清零,防止误判
 	RecvWaitTime = 40;                   // 等待应答超时限制40ms  正常情况10ms之内会完成
 	
 	CC1101SetTRMode(RX_MODE);            // 接收模式 
-	printf("waiting...\r\n");
-	while(CC_IRQ_READ() != 0);           // 等待接收数据包
-	//printf("waiting1...\r\n");
 	
+	CC_IRQ_Flag = 0;
+	EXTI4_Set(1);                        // 使能EXTI8中断
+	//while(CC_IRQ_READ() != 0);           // 等待接收数据包
+	//printf("waiting1...\r\n");
+	while(1)
+	{
+		Wait_Timer++;
+		delay_us(300);
+		if(CC_IRQ_Flag) 
+		{
+			printf("2\r\n");
+			break;        // CC1101接收到数据包信号
+		}
+		else
+		{
+			if(Wait_Timer == 65500)   // 等待从机数据包时， 定期检测当前网络连接状态
+			{
+				Wait_Timer = 0;
+				printf("Checking\r\n");
+//				constate = atk_8266_consta_check(); // 得到连接状态
+//				if(constate != '+')       // TCP连接出错
+//				{
+//					atk_8266_init();      // wifi模块重新连接TCP
+//				}
+			}
+		}
+	}
 	TIM3_Set(1);                         // 开启定时器TIM3
 	while(CC_IRQ_READ() == 0)
 	{
@@ -319,11 +264,42 @@ uint8_t RF_RecvHandler(void)
 	return 0;
 }
 
-
-
-
-
-
+void Sys_Init(void)
+{
+	u8 *ID;
+	
+	// 固定数据
+	Str_Info[0] = 0x23;                          // TCP包头
+	Str_Info[1] = (u8)(Queen_ID >> 24);          // Queen_ID
+	Str_Info[2] = (u8)(Queen_ID >> 16);          // Queen_ID
+	Str_Info[3] = (u8)(Queen_ID >> 8);           // Queen_ID
+	Str_Info[4] = Queen_ID & 0xff;               // Queen_ID
+	
+	delay_init();	    	                         // 延时函数初始化
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);  // 设置NVIC中断分组2:2位抢占优先级，2位响应优先级	  
+	uart_init(115200);	 	                         // 初始化串口1波特率为115200	调试
+	USART2_Init(115200);                             // 初始化串口2波特率为115200   wifi
+	
+	LCD_Init();				                         // 初始化液晶 	
+	KEY_Init();                                      // LCD背光灯开关
+	LCD_ShowString(25,150,200,24,24,(u8*)"wifi scanning..."); 
+	tp_dev.init();			                         // 初始化触摸屏
+	
+	SPI1_Init();                                     // CC1101 SPI通信初始化
+	TIM3_Init(99,7199);		                         // CC1101 1ms中断
+	mem_init();                                      // 初始化内存池
+	
+	printf("Oil_Can_Queen\r\n");
+	atk_8266_init();                                 // ATK-ESP8266模块初始化配置函数	
+	printf("atk_8266_init OK!\r\n");
+	ID = mymalloc(32);							     // 申请32字节内存
+	sprintf((char*)ID, "Queen_ID: %x Connected.", Queen_ID);
+	atk_8266_wifisend_data((u8*)ID);                 // 传送Queen_ID到TCP服务器
+	myfree(ID);		                                 // 释放内存 
+	printf("Mode:RX\r\n");
+ 
+	CC1101Init(); 
+}
 
 
 

@@ -7,6 +7,12 @@
 
 //触摸屏驱动(支持ADS7843/7846/UH7843/7846/XPT2046/TSC2046/OTT2001A/GT9147/FT5206等)代码	   
 
+#define TP_Adj   1
+#define TP_AdjNo 0
+
+//#define TP_Mode TP_Adj
+#define TP_Mode TP_AdjNo
+
 #define TP_PRES_DOWN 0x80  //触屏被按下	  
 #define TP_CATH_PRES 0x40  //有按键按下了 
 #define CT_MAX_TOUCH  5    //电容屏支持的点数,固定为5点
@@ -41,11 +47,11 @@ typedef struct
 
 extern _m_tp_dev tp_dev;	 	//触屏控制器在touch.c里面定义
 
-//电阻屏芯片连接引脚	   
+//电阻屏芯片连接引脚	
+#define TCLK PCout(0)  	//PC0  SCLK
 #define PEN  PCin(1)   	//PC1  INT
 #define DOUT PCin(2)   	//PC2  MISO
 #define TDIN PCout(3)  	//PC3  MOSI
-#define TCLK PCout(0)  	//PC0  SCLK
 #define TCS  PCout(13) 	//PC13 CS 
    
 //电阻屏函数

@@ -24,7 +24,7 @@ extern u16  BACK_COLOR; //背景颜色.默认为白色
 
 ////////////////////////////////////////////////////////////////////
 //-----------------LCD端口定义---------------- 
-#define	LCD_LED PCout(10) 				//LCD背光    	PC10 
+#define	LCD_LED PCout(10) 				//LCD背光    	    PC10 
  
 #define	LCD_CS_SET  GPIOC->BSRR=1<<9    //片选端口  		PC9
 #define	LCD_RS_SET	GPIOC->BSRR=1<<8    //数据/命令 		PC8	   
@@ -32,7 +32,7 @@ extern u16  BACK_COLOR; //背景颜色.默认为白色
 #define	LCD_RD_SET	GPIOC->BSRR=1<<6    //读数据			PC6
 								    
 #define	LCD_CS_CLR  GPIOC->BRR=1<<9     //片选端口  		PC9
-#define	LCD_RS_CLR	GPIOC->BRR=1<<8     //数据/命令		PC8	   
+#define	LCD_RS_CLR	GPIOC->BRR=1<<8     //数据/命令		    PC8	   
 #define	LCD_WR_CLR	GPIOC->BRR=1<<7     //写数据			PC7
 #define	LCD_RD_CLR	GPIOC->BRR=1<<6     //读数据			PC6   
 

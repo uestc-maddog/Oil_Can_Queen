@@ -35,6 +35,7 @@
 "..\obj\lcd.o"
 "..\obj\cc1101.o"
 "..\obj\spi.o"
+"..\obj\key.o"
 "..\obj\malloc.o"
 "..\obj\common.o"
 "..\obj\wifista.o"

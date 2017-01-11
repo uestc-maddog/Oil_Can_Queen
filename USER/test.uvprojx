@@ -10,7 +10,7 @@
       <TargetName>Target 1</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060061::V5.06 update 1 (build 61)::ARMCC</pCCUsed>
+      <pCCUsed>5060422::V5.06 update 4 (build 422)::ARMCC</pCCUsed>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32F103RC</Device>
@@ -328,11 +328,14 @@
             <v6LangP>0</v6LangP>
             <vShortEn>0</vShortEn>
             <vShortWch>0</vShortWch>
+            <v6Lto>0</v6Lto>
+            <v6WtE>0</v6WtE>
+            <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define>STM32F10X_HD,USE_STDPERIPH_DRIVER</Define>
               <Undefine></Undefine>
-              <IncludePath>..\ATK-ESP8266;..\HARDWARE\LCD;..\HARDWARE\SPI;..\HARDWARE\TIMER;..\HARDWARE\TOUCH;..\HARDWARE\USART2;..\MALLOC;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\STM32F10x_FWLib\inc;..\CORE;..\USER;..\HARDWARE\CC1101;..\HARDWARE\SPI</IncludePath>
+              <IncludePath>..\ATK-ESP8266;..\HARDWARE\LCD;..\HARDWARE\SPI;..\HARDWARE\TIMER;..\HARDWARE\TOUCH;..\HARDWARE\USART2;..\MALLOC;..\SYSTEM\delay;..\SYSTEM\sys;..\SYSTEM\usart;..\STM32F10x_FWLib\inc;..\CORE;..\USER;..\HARDWARE\CC1101;..\HARDWARE\SPI;..\HARDWARE\KEY</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -345,6 +348,7 @@
             <NoWarn>0</NoWarn>
             <uSurpInc>0</uSurpInc>
             <useXO>0</useXO>
+            <uClangAs>0</uClangAs>
             <VariousControls>
               <MiscControls></MiscControls>
               <Define></Define>
@@ -575,6 +579,11 @@
               <FileType>1</FileType>
               <FilePath>..\HARDWARE\SPI\spi.c</FilePath>
             </File>
+            <File>
+              <FileName>key.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\HARDWARE\KEY\key.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -599,16 +608,6 @@
               <FileName>wifista.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\ATK-ESP8266\wifista.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>README</GroupName>
-          <Files>
-            <File>
-              <FileName>README.TXT</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\README.TXT</FilePath>
             </File>
           </Files>
         </Group>

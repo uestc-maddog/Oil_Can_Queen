@@ -14,7 +14,7 @@ u8 atk_8266_wifisend_data(u8 *Wifi_Data)
 	
 	for(i = 0; i < 2; i++) 
 	{
-		delay_ms(20);
+		delay_ms(2);                      // 20
 		constate = atk_8266_consta_check(); // 得到连接状态
 	}
 	//constate = '+';

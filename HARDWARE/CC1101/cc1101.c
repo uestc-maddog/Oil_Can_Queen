@@ -2,6 +2,7 @@
 #include "stdio.h"
 #include "spi.h"
 #include "delay.h"
+#include "sys.h"
 
 // IDLE状态：不发送、不接收时的缺省状态，电流：1.9mA
 // Sleep状态：电流不足1mA
@@ -412,14 +413,14 @@ OUTPUT   : 1:received count, 0:no data
 uint8_t CC1101RecPacket(uint8_t *rxBuffer)
 {
 	uint8_t status[2], pktLen;
-	uint16_t x = 0;
+	uint16_t temp = 0;
 
 	if(CC1101GetRXCnt()!= 0)        // 接收到数据
 	{
 		pktLen = CC1101ReadReg(CC1101_RXFIFO) & 0xff;           // Read length byte
 		if((CC1101ReadReg(CC1101_PKTCTRL1) & ~0x03)!= 0)
 		{
-			x = CC1101ReadReg(CC1101_RXFIFO);
+			temp = CC1101ReadReg(CC1101_RXFIFO);
 		}
 		if(pktLen <= 0 || pktLen > 10) return 0;
 		else                           pktLen--;
@@ -446,13 +447,32 @@ void CC1101Init(void)
 	volatile uint8_t i, j;
 	
 	GPIO_InitTypeDef GPIO_InitStructure;
- 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);    //使能PORTA时钟
+	EXTI_InitTypeDef EXTI_InitStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
+
+  	RCC_APB2PeriphClockCmd(RCC_APB2Periph_AFIO,ENABLE);      //外部中断,需要使能AFIO时钟
+ 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC, ENABLE);    //使能PORTC时钟
 	
-	/*Configure GPIO pins : PA8 CC_IRQ */
+	/*Configure GPIO pins : PC4 CC_IRQ */
 	GPIO_InitStructure.GPIO_Pin = PIN_CC_IRQ;	    
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;   
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_Init(PORT_CC_IRQ, &GPIO_InitStructure); 	
+	
+	GPIO_EXTILineConfig(GPIO_PortSourceGPIOC,GPIO_PinSource4);
+	EXTI_InitStructure.EXTI_Line = EXTI_Line4;
+	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+	EXTI_Init(&EXTI_InitStructure);
+	
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI4_IRQn;		  
+  	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x02;	// 抢占优先级2
+  	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x01;			// 
+  	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;					// 使能外部中断通道
+  	NVIC_Init(&NVIC_InitStructure); 
+
+	EXTI4_Set(0);             // 屏蔽EXTI8中断
 	
 	/*Configure GPIO pins : PA4 CSN*/
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;
@@ -460,7 +480,7 @@ void CC1101Init(void)
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	/*Configure GPIO pin Output Level */
 	GPIO_SetBits(GPIOA, GPIO_Pin_4);
-	delay_ms(10);
+	delay_ms(5);
 	
 	CC1101Reset();    
 	
@@ -494,7 +514,26 @@ void CC1101Init(void)
 //	i = CC1101ReadStatus(CC1101_VERSION);//for test, refer to the datasheet
 //	printf("%d\r\n", (int)i);
 	
-	delay_ms(20);
+	delay_ms(5);
+}
+volatile u8 CC_IRQ_Flag = 0;
+void EXTI4_IRQHandler(void)
+{			
+	if(EXTI_GetITStatus(EXTI_Line4) == SET)		  // PC4发生下降沿中断
+	{	
+		printf("1\r\n");
+		CC_IRQ_Flag = 1;
+		EXTI4_Set(0);           // 屏蔽line4  
+	}		
+}
+
+// EXTI4外部中断开关
+// en:1,使能; 0,屏蔽;  
+void EXTI4_Set(u8 en)
+{
+    EXTI->PR = 1<<4;              // 清除LINE4上的中断标志位
+    if(en) EXTI->IMR |= 1<<4;     // 使能line4
+    else   EXTI->IMR  &= ~(1<<4); // 屏蔽line4   
 }
 
 // 获取RSSI值
