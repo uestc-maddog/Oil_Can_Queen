@@ -17,7 +17,7 @@
 #define TX 1                    // 发送
 #define RX 0                    // 接收
 #define ACK_LENGTH      4       // 应答信号长度       
-#define SEND_LENGTH     5      // 发送数据包长度
+#define SEND_LENGTH     6       // 发送数据包长度
 #define SEND_GAP        1000    // 间隔1s发送一次数据
 #define RECV_TIMEOUT    1500    // 接收超时
 

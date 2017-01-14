@@ -21,8 +21,8 @@ volatile int RecvWaitTime = 0;           // 接收等待超时时间
 
 u8 Link_Flag = 0;                        // 标记已建立过连接，可直接连入上次选择的wifi
 
-                           // 帧头  源地址  目标地址 distance*10  帧尾
-u8 SendBuffer[SEND_LENGTH] = {0x55,   0,    0xff,    15,          0xaa};  // 从机待发送数据
+                           // 帧头  源地址  目标地址 distance*10  电量百分比 帧尾
+u8 SendBuffer[SEND_LENGTH] = {0x55,   0,    0xff,    15,          50,        0xaa};  // 从机待发送数据
                            // 帧头  源地址  目标地址  帧尾
 u8 AckBuffer[ACK_LENGTH]   = {0x55,  0xff,     0,     0xaa};              // 主机应答数据
 
@@ -38,21 +38,34 @@ int main(void)
 	u8 Link_Error = 0, res = 0;
 	
 	Sys_Init();
+	
+	
+    QueenRun_UI();     //queen 接入服务器后的UI
 	while(1)
 	{
 		res = RF_RecvHandler();                                 // 无线数据接收处理 
-		if(res != 0) printf("Rec ERROR:%d\r\n", (int)res);      // 接收错误
+		if(res != 0) 
+		{
+			printf("Rec ERROR:%d\r\n", (int)res);               // 接收错误
+			LCD_Fill(0,271,239,295,WHITE);
+			LCD_ShowString(84,275,72,16,16, (u8*)"Rec ERROR");
+			LCD_ShowxNum(156,275,res,1,16,0);     
+		}	
 		else                                                    // 接收成功
 		{
 			while(1)    // 持续发送，直到发送成功！
 			{
 				if(atk_8266_wifisend_data((u8*)Str_Info) == 0)      // wifi发送失败
 				{
+					LCD_Fill(0,271,239,295,WHITE);
+					LCD_ShowString(44,275,152,16,16, (u8*)"Device#  Send ERROR");
+					LCD_ShowxNum(100,275,Str_Info[5],1,16,0);       // Device number   Drone_ID
 					if(++Link_Error == 3)     // 连续3次发送失败，重新连接TCP
 					{
 						Link_Error = 0;       // 清零
 						printf("连接出错，正在重新连接...\r\n\r\n");	
 						atk_8266_init();      // ATK-ESP8266模块初始化配置函数
+						QueenRun_UI();     //queen 接入服务器后的UI
 						CC1101Init(); 
 						delay_ms(500);
 					}
@@ -60,6 +73,9 @@ int main(void)
 				}
 				else                                                // wifi发送成功
 				{
+					LCD_Fill(0,271,239,295,WHITE);
+					LCD_ShowString(44,275,152,16,16, (u8*)"Device#  Send OK!");
+					LCD_ShowxNum(100,275,Str_Info[5],1,16,0);       // Device number   Drone_ID
 					Link_Error = 0;      // 清零
 					printf("wifi发送成功\r\n\r\n");
 					break;
@@ -153,7 +169,7 @@ uint8_t RF_SendPacket(uint8_t *Sendbuffer, uint8_t length)
 ============================================================================*/
 uint8_t RF_RecvHandler(void)
 {
-	uint8_t i = 0, length = 0;    // recv_buffer[10] = {0};
+	uint8_t i = 0, length = 0;    
 	u8 *recv_buffer = mymalloc(10);	     // 申请10字节内存
 	u16 Wait_Timer = 0;
 	
@@ -168,7 +184,7 @@ uint8_t RF_RecvHandler(void)
 	//printf("waiting1...\r\n");
 	while(1)
 	{
-		Wait_Timer++;
+		if(++Wait_Timer == 10000) LCD_Fill(0,271,239,295,WHITE); // 清除通信提示区
 		delay_us(300);
 		if(CC_IRQ_Flag) 
 		{
@@ -203,8 +219,8 @@ uint8_t RF_RecvHandler(void)
 	
 	length = CC1101RecPacket(recv_buffer);            // 读取接受到的数据长度和数据内容
 
-//                           // 帧头  源地址  目标地址 distance:1B) 帧尾
-//u8 SendBuffer[SEND_LENGTH] = {0x55,   0,    0xff,    15,          0xaa};  // 从机待发送数据
+//                           // 帧头  源地址  目标地址 distance*10  电量百分比 帧尾
+//u8 SendBuffer[SEND_LENGTH] = {0x55,   0,    0xff,    15,          50,        0xaa};  // 从机待发送数据
 //                           // 帧头  源地址  目标地址  帧尾2B
 //u8 AckBuffer[ACK_LENGTH]   = {0x55,  0xff,     0,     0xaa};         
 
@@ -239,16 +255,41 @@ uint8_t RF_RecvHandler(void)
 		myfree(recv_buffer);		// 释放内存
 		return 4;                   // 数据包目标地址错误
 	}
-	if(recv_buffer[4] != 0xaa)
+	if(recv_buffer[5] != 0xaa)
 	{
 		myfree(recv_buffer);		// 释放内存
 		return 5;                   // 数据包帧尾错误
 	}
 	
-	// 数据接收正确  提取出从机数据包中的有效数据到  Str_Info 中    从机地址+有效数据
+	// 数据接收正确 LCD显示 
+	POINT_COLOR = RED;
+	switch(recv_buffer[1])         // 从机地址   Drone_ID
+	{
+		case 1:
+			LCD_ShowxNum(54, 72,recv_buffer[3],3,24,0);      // #1   Dis
+			LCD_ShowxNum(54,102,recv_buffer[4],3,24,0);      // Bat
+			break;
+		case 2:
+			LCD_ShowxNum(174, 72,recv_buffer[3],3,24,0);     // #2   Dis
+			LCD_ShowxNum(174,102,recv_buffer[4],3,24,0);     // Bat
+			break;
+		case 3:
+			LCD_ShowxNum(54,197,recv_buffer[3],3,24,0);      // #3   Dis
+			LCD_ShowxNum(54,227,recv_buffer[4],3,24,0);      // Bat
+			break;
+		case 4:
+			LCD_ShowxNum(174,197,recv_buffer[3],3,24,0);     // #4   Dis
+			LCD_ShowxNum(174,227,recv_buffer[4],3,24,0);     // Bat
+			break;
+		default:
+			break;
+	}
+	
+	//提取出从机数据包中的有效数据到  Str_Info 中    从机地址+有效数据
 	Str_Info[5] = recv_buffer[1];                // 从机地址   Drone_ID
-	Str_Info[6] = recv_buffer[3];                // Distance   单位：cm
-	Str_Info[7] = 0;                               // 添加字符串结束符
+	Str_Info[6] = recv_buffer[3];                // Distance         单位：cm
+	Str_Info[7] = recv_buffer[4];                // 电池电量百分比   [0,100]
+	Str_Info[8] = 0;                             // 添加字符串结束符
 
 	printf("Rec from:%d Distance:%dcm\r\n", (int)Str_Info[5], (int)Str_Info[6]);        // 显示从机地址
 	//printf("Str_length=%d; Str_Info:%s; RSSI=%d dB\r\n", (int)strlen((const char*)Str_Info), Str_Info, (int)Get_1101RSSI());
@@ -267,37 +308,36 @@ uint8_t RF_RecvHandler(void)
 void Sys_Init(void)
 {
 	u8 *ID;
-	
+
 	// 固定数据
 	Str_Info[0] = 0x23;                          // TCP包头
 	Str_Info[1] = (u8)(Queen_ID >> 24);          // Queen_ID
 	Str_Info[2] = (u8)(Queen_ID >> 16);          // Queen_ID
 	Str_Info[3] = (u8)(Queen_ID >> 8);           // Queen_ID
 	Str_Info[4] = Queen_ID & 0xff;               // Queen_ID
-	
+
 	delay_init();	    	                         // 延时函数初始化
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);  // 设置NVIC中断分组2:2位抢占优先级，2位响应优先级	  
 	uart_init(115200);	 	                         // 初始化串口1波特率为115200	调试
 	USART2_Init(115200);                             // 初始化串口2波特率为115200   wifi
-	
+
 	LCD_Init();				                         // 初始化液晶 	
-	KEY_Init();                                      // LCD背光灯开关
-	LCD_ShowString(25,150,200,24,24,(u8*)"wifi scanning..."); 
+	KEY_Init();                                      // LCD背光灯开关键
 	tp_dev.init();			                         // 初始化触摸屏
-	
+
 	SPI1_Init();                                     // CC1101 SPI通信初始化
 	TIM3_Init(99,7199);		                         // CC1101 1ms中断
 	mem_init();                                      // 初始化内存池
-	
+
 	printf("Oil_Can_Queen\r\n");
-	atk_8266_init();                                 // ATK-ESP8266模块初始化配置函数	
+	while(atk_8266_init());                          // 等待wifi、TCP连接成功	
 	printf("atk_8266_init OK!\r\n");
-	ID = mymalloc(32);							     // 申请32字节内存
+	ID = mymalloc(32);							                 // 申请32字节内存
 	sprintf((char*)ID, "Queen_ID: %x Connected.", Queen_ID);
 	atk_8266_wifisend_data((u8*)ID);                 // 传送Queen_ID到TCP服务器
 	myfree(ID);		                                 // 释放内存 
 	printf("Mode:RX\r\n");
- 
+
 	CC1101Init(); 
 }
 

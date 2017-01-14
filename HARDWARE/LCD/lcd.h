@@ -96,7 +96,11 @@ extern u16  BACK_COLOR; //背景颜色.默认为白色
 
 #define LGRAYBLUE        0XA651 //浅灰蓝色(中间层颜色)
 #define LBBLUE           0X2B12 //浅棕蓝色(选择条目的反色)
-	    															  
+
+extern const u16 MD_logo[];           // MD_logo display .bmp file    29 * 20
+extern const u16 wifi_logo[];        // wifi_logo display .bmp file   26 * 20
+extern const u16 Boot_Interface[];   // boot display .bmp file        240*320
+	
 void LCD_Init(void);													   	//初始化
 void LCD_DisplayOn(void);													//开显示
 void LCD_DisplayOff(void);													//关显示
@@ -116,13 +120,17 @@ void LCD_ShowxNum(u16 x,u16 y,u32 num,u8 len,u8 size,u8 mode);				//显示 数字
 void LCD_ShowString(u16 x,u16 y,u16 width,u16 height,u8 size,u8 *p);		//显示一个字符串,12/16字体
 
 void LCD_WriteReg(u16 LCD_Reg, u16 LCD_RegValue);
-u16 LCD_ReadReg(u16 LCD_Reg);
+u16  LCD_ReadReg(u16 LCD_Reg);
 void LCD_WriteRAM_Prepare(void);
 void LCD_WriteRAM(u16 RGB_Code);		  
 void LCD_Scan_Dir(u8 dir);									//设置屏扫描方向
 void LCD_Display_Dir(u8 dir);								//设置屏幕显示方向
 void LCD_Set_Window(u16 sx,u16 sy,u16 width,u16 height);	//设置窗口	
 
+void display_BootImage(void);                               //显示开机图片
+void display_MDlogo(void);                                  //显示 MD logo
+void QueenRun_UI(void);                                     //queen 接入服务器后的UI
+	
 //写数据函数
 #define LCD_WR_DATA(data){\
 LCD_RS_SET;\
@@ -149,7 +157,7 @@ LCD_CS_SET;\
 #define SSD_HPS	(SSD_HOR_BACK_PORCH)
 #define SSD_VT 	(SSD_VER_RESOLUTION+SSD_VER_BACK_PORCH+SSD_VER_FRONT_PORCH)
 #define SSD_VPS (SSD_VER_BACK_PORCH)
-						  		 
+
 #endif
 
 

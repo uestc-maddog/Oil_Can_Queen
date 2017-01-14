@@ -198,17 +198,19 @@ void atk_8266_get_wanip(u8* ipbuf)
 }
 
 
-//ATK-ESP8266模块初始化配置函数
-void atk_8266_init(void)
+// ATK-ESP8266模块初始化配置函数
+// 返回值：0：wifi、TCP连接成功     1；ERROR（wifi未开启或密码输入错误）     
+u8 atk_8266_init(void)
 {
-	u8 timer = 0;
-	u8 ipbuf[16]; 	                          // IP缓存
-	u8 *p = mymalloc(32);							        // 申请32字节内存
+	u8 timer = 0, Wifi_Link_Timer = 0;
+	u8 ipbuf[16]; 	                             // IP输入缓存
+	u8 *p = mymalloc(32);				         // 申请32字节内存
+	
 	
 	printf("ATK-ESP8266 WIFI模块\r\n");
-	while(atk_8266_send_cmd((u8*)"AT",(u8*)"OK",20))    //检查WIFI模块是否在线
+	while(atk_8266_send_cmd((u8*)"AT",(u8*)"OK",20))  //检查WIFI模块是否在线
 	{
-		atk_8266_quit_trans();                       //退出透传
+		atk_8266_quit_trans();                        //退出透传
 		atk_8266_send_cmd((u8*)"AT+CIPMODE=0",(u8*)"OK",200);  //关闭透传模式	
 		printf("未检测到wifi模块!!!\r\n");
 		delay_ms(1200);
@@ -227,7 +229,7 @@ void atk_8266_init(void)
 	delay_ms(1000);         //延时3S等待重启成功
 	delay_ms(1000);
 	delay_ms(1000);
-	delay_ms(800);
+//	delay_ms(100);          //delay_ms(800);
 
 	/*************************用户手动连接wifi*********************************/
 	while(1)
@@ -239,6 +241,13 @@ void atk_8266_init(void)
 			if(Enter_AP_PWD() == 0) break; // 成功输入密码
 		}
 	}
+	
+	// 输入wifi密码后，立即显示连接提示
+	LCD_Clear(WHITE);	
+	POINT_COLOR = BLUE;
+	BACK_COLOR = WHITE;
+	LCD_ShowString(18,120,200,24,24,(u8*)"Wifi Connecting");
+	LCD_ShowString(25,150,200,24,24,(u8*)" Please wait");
 	/*************************用户手动连接wifi*********************************/
 	
 	
@@ -247,14 +256,14 @@ void atk_8266_init(void)
 	printf("\r\n%s %s\r\n",wifista_ssid,PWD_Temp);        // 打印无线参数:ssid,密码
 
 	sprintf((char*)p,"AT+CWJAP=\"%s\",\"%s\"",wifista_ssid,PWD_Temp);//设置无线参数:ssid,密码
-	timer = 0;
+	timer = 0; Wifi_Link_Timer = 0;                        //清零
 	while(atk_8266_send_cmd(p,(u8*)"WIFI GOT IP",300))     //连接目标路由器,并且获得IP
 	{
 		printf("尝试连接目标wifi：%s，请确认该wifi已开启！！！\r\n", wifista_ssid);
 		LCD_Clear(WHITE);	
 		POINT_COLOR = BLUE;
 		BACK_COLOR = WHITE;
-		LCD_ShowString(25,120,200,24,24,(u8*)"   Connecting");
+		LCD_ShowString(18,120,200,24,24,(u8*)"Wifi Connecting");
 		if(++timer == 1)    LCD_ShowString(25,150,200,24,24,(u8*)" Please wait.");
 		else if(timer == 2) LCD_ShowString(25,150,200,24,24,(u8*)" Please wait..");
 		else if(timer == 3) 
@@ -263,6 +272,20 @@ void atk_8266_init(void)
 			LCD_ShowString(25,150,200,24,24,(u8*)" Please wait...");
 		}
 		delay_ms(300);
+		if(++Wifi_Link_Timer == 6)           // wifi连接超时   提示用户：1，检查wifi是否已成功开启  2，确认wifi密码是否输入成功
+		{
+			LCD_Clear(WHITE);	
+			POINT_COLOR = BLUE;
+			BACK_COLOR = WHITE;
+			LCD_ShowString(25, 90,200,24,24,(u8*)"  Please check");   // Please check whether the WiFi is turned on
+			LCD_ShowString(25,120,200,24,24,(u8*)"  the wifi and");
+			LCD_ShowString(25,150,200,24,24,(u8*)"  the password");  // Confirm that the WiFi password is correct
+			POINT_COLOR = BLACK;
+			
+			myfree(p);		//释放内存 
+			USART2_RX_STA = 0;
+			return 1;
+		}
 	}	
 	LCD_Clear(WHITE);	
 	POINT_COLOR = BLUE;
@@ -273,7 +296,7 @@ void atk_8266_init(void)
 	printf("成功连接目标wifi：%s\r\n", wifista_ssid);
 	delay_ms(650);delay_ms(650);
 	delay_ms(650);
-	//TCP
+	// Enter TCP IP Addr
 //	IP_Temp[0] = 0;        // 密码输入缓存
 //    IP_Index = 0;        // 标记当前IP长度
 //	if(Enter_TCP_IP())   goto wifi_scan;        // 输入IP及端口失败
@@ -283,7 +306,7 @@ void atk_8266_init(void)
 	// 成功输入TCP服务器IP
 	atk_8266_send_cmd((u8*)"AT+CIPMUX=0",(u8*)"OK",20);   //0：单连接，1：多连接
 	sprintf((char*)p,(const char*)"AT+CIPSTART=\"TCP\",\"%s\",%s",(u8*)remote_ip,(u8*)portnum);    //配置目标TCP服务器
-	timer = 0;
+	timer = 0; Wifi_Link_Timer = 0;                        //清零
 	while(atk_8266_send_cmd(p,(u8*)"OK",300))
 	{
 		printf("TCP连接失败，请确认服务器是否打开\r\n");
@@ -299,6 +322,20 @@ void atk_8266_init(void)
 			LCD_ShowString(25,150,200,24,24,(u8*)" Please wait...");
 		}
 		delay_ms(500);
+		
+		if(++Wifi_Link_Timer == 6)           // TCP服务器连接超时 
+		{
+			LCD_Clear(WHITE);	
+			POINT_COLOR = BLUE;
+			BACK_COLOR = WHITE;
+			LCD_ShowString(25,120,200,24,24,(u8*)"   TCP Server");   // Please check whether the WiFi is turned on
+			LCD_ShowString(25,150,200,24,24,(u8*)"Connection error");
+			POINT_COLOR = BLACK;
+			
+			myfree(p);		//释放内存 
+			USART2_RX_STA = 0;
+			return 2;
+		}
 	}	
 	printf("TCP连接成功\r\n");
 	LCD_Clear(WHITE);	
@@ -315,6 +352,8 @@ void atk_8266_init(void)
 	
 	myfree(p);		//释放内存 
 	USART2_RX_STA=0;
+	
+	return 0;
 }
 
 // ESP_8266扫描可用AP，并连入
@@ -326,10 +365,12 @@ u8 AP_Choose(void)
 	volatile u8 Flag = 0;
 	volatile u16 i = 0, m = 0, n = 0, len = 0, timer = 0;
 	
-	
 	while(1)
 	{	
-		waittime = 200; Flag = 0; timer = 0;
+		LCD_Clear(WHITE);
+		LCD_ShowString(25,150,200,24,24,(u8*)"wifi scanning...");    // 提示wifi扫描中
+		
+		waittime = 240; Flag = 0; timer = 0;
 		for(m = 0; m < 25; m++)
 		{
 			for(n = 0; n < 30; n++) AP_TAB[m][n] = 0;
@@ -353,8 +394,16 @@ u8 AP_Choose(void)
 		}
 		if(waittime == 0) 
 		{
-			printf("Ack Error...Retrying\r\n");
-			continue;     // 应答超时
+			printf("Wifi Scan Ack Error...Retrying\r\n");
+			LCD_Clear(WHITE);
+			LCD_ShowString(25,120,200,24,24,(u8*)"There is no wifi!");    // 提示扫描不到wifi
+			LCD_ShowString(25,150,200,24,24,(u8*)"Retry the scan.");    // 提示wifi扫描中
+			delay_ms(1000);
+			LCD_ShowString(25,150,200,24,24,(u8*)"Retry the scan..");    // 提示wifi扫描中
+			delay_ms(1000);
+			LCD_ShowString(25,150,200,24,24,(u8*)"Retry the scan...");    // 提示wifi扫描中
+			delay_ms(1000);
+			continue;                        // 6s应答超时
 		}
 
 		// 成功接收应答
@@ -408,6 +457,11 @@ u8 AP_Choose(void)
 					{
 						int Index = (tp_dev.y[0] - 60) / 20;
 						wifista_ssid = (u8*)AP_TAB[Index];
+						
+						POINT_COLOR = RED;
+						LCD_ShowString(60,60+20*Index,240,16,16,(u8*)AP_TAB[Index]);    // 用户选择AP 换色显示
+						POINT_COLOR = BLACK;
+						
 						printf("wifista_ssid:%s\r\n", wifista_ssid);
 						delay_ms(300);
 						return 0;
@@ -416,8 +470,8 @@ u8 AP_Choose(void)
 			}
 			else 
 			{
-				delay_ms(10);	//没有按键按下的时候 	 
-				if(++timer == 850) break;            // 10s内未选择网络，则刷新网络
+				delay_ms(10);	              // 没有按键按下的时候 	 
+				if(++timer == 950) break;     // 10s内未选择网络，则刷新网络
 			}				
 		}
 	}
@@ -464,16 +518,30 @@ u8 Enter_AP_PWD(void)
 				{
 					if(tp_dev.x[0] < 52)                // Cancel 
 					{
-						delay_ms(400);
+						POINT_COLOR = RED;                               // Cancel按下效果  向右下角偏移2像素
+						BACK_COLOR = 0xEEEE;
+						LCD_Fill(0,25,52,50,WHITE);           // 清除原来的显示
+						LCD_Fill(2,27,54,52,0xEEEE);	
+						LCD_ShowString(4,32,50,16,16, (u8*)"Cancel"); 
+						
+						delay_ms(500);
 						LCD_Clear(WHITE);
+						POINT_COLOR = BLACK;                         
+						BACK_COLOR = WHITE;
 						LCD_ShowString(25,150,200,24,24,(u8*)"wifi scanning..."); 
 						return 1;
 					}
 					if(tp_dev.x[0] > 203)               // Join
 					{
-						if(PWD_Index >= 8)           // 输入密码长度 > 8
+						if(PWD_Index >= 8)              // 输入密码长度 > 8     有效输入
 						{
 //							wifista_password = (u8*)PWD_Temp;  // 获取到密码
+							BACK_COLOR = 0xEEEE;                          // Join按下效果  向左下角偏移2像素
+							POINT_COLOR = RED; 
+							LCD_Fill(203,25,239,50,WHITE);    // 清除原来的显示
+							LCD_Fill(201,27,237,52,0xEEEE);	
+							LCD_ShowString(203,32,35,16,16, (u8*)"Join");
+							
 							printf("wifista_password:%s\r\n", PWD_Temp);
 							delay_ms(300);
 							return 0;
@@ -573,8 +641,16 @@ u8 Load_Kb_Char(void)
 				{
 					if(tp_dev.x[0] < 52)                // Cancel 
 					{
-						delay_ms(400);
+						POINT_COLOR = RED;                               // Cancel按下效果  向右下角偏移2像素
+						BACK_COLOR = 0xEEEE;
+						LCD_Fill(0,25,52,50,WHITE);           // 清除原来的显示
+						LCD_Fill(2,27,54,52,0xEEEE);	
+						LCD_ShowString(4,32,50,16,16, (u8*)"Cancel");
+						
+						delay_ms(500);
 						LCD_Clear(WHITE);
+						POINT_COLOR = BLACK;                         
+						BACK_COLOR = WHITE;
 						LCD_ShowString(25,150,200,24,24,(u8*)"wifi scanning..."); 
 						return 2;
 					}
@@ -583,6 +659,12 @@ u8 Load_Kb_Char(void)
 						if(PWD_Index >= 8)           // 输入密码长度 > 8
 						{
 //							wifista_password = (u8*)PWD_Temp;  // 获取到密码
+							BACK_COLOR = 0xEEEE;                          // Join按下效果  向左下角偏移2像素
+							POINT_COLOR = RED; 
+							LCD_Fill(203,25,239,50,WHITE);    // 清除原来的显示
+							LCD_Fill(201,27,237,52,0xEEEE);	
+							LCD_ShowString(203,32,35,16,16, (u8*)"Join");
+							
 							printf("wifista_password:%s\r\n", PWD_Temp);
 							delay_ms(300);
 							return 0;
