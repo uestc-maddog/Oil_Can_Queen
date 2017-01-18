@@ -205,13 +205,7 @@ u8 atk_8266_init(void)
 	u8 timer = 0, Wifi_Link_Timer = 0;
 	u8 ipbuf[16]; 	                             // IP输入缓存
 	u8 *p = mymalloc(32);				         // 申请32字节内存
-<<<<<<< HEAD
-	
-=======
-	
-	
-	printf("ATK-ESP8266 WIFI模块\r\n");
->>>>>>> 02de1eb26760aa90c9c7ceaf72af1d63c8c384e2
+
 	while(atk_8266_send_cmd((u8*)"AT",(u8*)"OK",20))  //检查WIFI模块是否在线
 	{
 		atk_8266_quit_trans();                        //退出透传

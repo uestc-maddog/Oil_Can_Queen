@@ -37,14 +37,8 @@ int main(void)
 	u8 Wifi_SendError = 0, res = 0;           // Wifi_SendError:wifi模块向服务器发送数据出错次数   res：Queen CC1101接受结果  
 	
 	Sys_Init();                               // Oil_Can Queen 系统外设初始化 
-	
-<<<<<<< HEAD
-=======
-	Sys_Init();
-	
-	
     QueenRun_UI();     //queen 接入服务器后的UI
->>>>>>> 02de1eb26760aa90c9c7ceaf72af1d63c8c384e2
+
 	while(1)
 	{
 		res = RF_RecvHandler();                                 // 无线数据接收处理 
@@ -64,11 +58,7 @@ int main(void)
 					LCD_Fill(0,271,239,295,WHITE);
 					LCD_ShowString(44,275,152,16,16, (u8*)"Device#  Send ERROR");
 					LCD_ShowxNum(100,275,Str_Info[5],1,16,0);       // Device number   Drone_ID
-<<<<<<< HEAD
 					if(++Wifi_SendError == 3)     // 连续3次发送失败，重新连接TCP
-=======
-					if(++Link_Error == 3)     // 连续3次发送失败，重新连接TCP
->>>>>>> 02de1eb26760aa90c9c7ceaf72af1d63c8c384e2
 					{
 						Wifi_SendError = 0;       // 清零
 						printf("连接出错，正在重新连接...\r\n\r\n");	
@@ -84,11 +74,7 @@ int main(void)
 					LCD_Fill(0,271,239,295,WHITE);
 					LCD_ShowString(44,275,152,16,16, (u8*)"Device#  Send OK!");
 					LCD_ShowxNum(100,275,Str_Info[5],1,16,0);       // Device number   Drone_ID
-<<<<<<< HEAD
 					Wifi_SendError = 0;      // 清零
-=======
-					Link_Error = 0;      // 清零
->>>>>>> 02de1eb26760aa90c9c7ceaf72af1d63c8c384e2
 					printf("wifi发送成功\r\n\r\n");
 					break;
 				}
@@ -191,15 +177,9 @@ uint8_t RF_RecvHandler(void)
 	
 	while(1)
 	{
-<<<<<<< HEAD
 		if(++Wait_Timer == 15000) LCD_Fill(0,271,239,295,WHITE); // 清除通信提示区
 		delay_us(200);
 		if(CC1101_IRQFlag)                  // CC1101接收到数据包信号
-=======
-		if(++Wait_Timer == 10000) LCD_Fill(0,271,239,295,WHITE); // 清除通信提示区
-		delay_us(300);
-		if(CC_IRQ_Flag) 
->>>>>>> 02de1eb26760aa90c9c7ceaf72af1d63c8c384e2
 		{
 			//printf("2\r\n");
 			break;        
@@ -230,17 +210,6 @@ uint8_t RF_RecvHandler(void)
 	TIM3_Set(0);                                      // 关闭定时器TIM3
 	
 	length = CC1101RecPacket(recv_buffer);            // 读取接受到的数据长度和数据内容
-<<<<<<< HEAD
-=======
-
-//                           // 帧头  源地址  目标地址 distance*10  电量百分比 帧尾
-//u8 SendBuffer[SEND_LENGTH] = {0x55,   0,    0xff,    15,          50,        0xaa};  // 从机待发送数据
-//                           // 帧头  源地址  目标地址  帧尾2B
-//u8 AckBuffer[ACK_LENGTH]   = {0x55,  0xff,     0,     0xaa};         
-
-	//printf("strlen(recv_buffer)=%d\r\n", (int)strlen((const char*)recv_buffer));
-	
->>>>>>> 02de1eb26760aa90c9c7ceaf72af1d63c8c384e2
 	if(length <= 0 || length > 10)     // 数组越界处理
 	{
 		CC1101Init(); 
@@ -346,19 +315,11 @@ void Sys_Init(void)
 
 	printf("Oil_Can_Queen\r\n");
 	while(atk_8266_init());                          // 等待wifi、TCP连接成功	
-<<<<<<< HEAD
+
 	ID = mymalloc(32);							     // 申请32字节内存
 	sprintf((char*)ID, "Queen_ID: %x Connected.", Queen_ID);
 	atk_8266_wifisend_data((u8*)ID);                 // 传送Queen_ID到TCP服务器
 	myfree(ID);		                                 // 释放内存 
-=======
-	printf("atk_8266_init OK!\r\n");
-	ID = mymalloc(32);							                 // 申请32字节内存
-	sprintf((char*)ID, "Queen_ID: %x Connected.", Queen_ID);
-	atk_8266_wifisend_data((u8*)ID);                 // 传送Queen_ID到TCP服务器
-	myfree(ID);		                                 // 释放内存 
-	printf("Mode:RX\r\n");
->>>>>>> 02de1eb26760aa90c9c7ceaf72af1d63c8c384e2
 
 	CC1101Init(); 
 }

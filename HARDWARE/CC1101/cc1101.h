@@ -19,12 +19,8 @@
 #define RX 0                    // 接收
 #define ACK_LENGTH      4       // 应答信号长度       
 #define SEND_LENGTH     6       // 发送数据包长度
-<<<<<<< HEAD
+
 #define RECV_TIMEOUT    3000    // 接收超时
-=======
-#define SEND_GAP        1000    // 间隔1s发送一次数据
-#define RECV_TIMEOUT    1500    // 接收超时
->>>>>>> 02de1eb26760aa90c9c7ceaf72af1d63c8c384e2
 
 //#define WORK_MODE TX       // 发送
 #define WORK_MODE RX       // 接收
