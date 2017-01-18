@@ -9,7 +9,7 @@
 #include "string.h"    
 #include "usart2.h" 
 
-void atk_8266_init(void);
+u8 atk_8266_init(void);
 u8 AP_Choose(void);
 u8 Enter_AP_PWD(void);          // ÊäÈëwifiÃÜÂë£¬¼ÓÔØÊı×Ö¼üÅÌ
 u8 Load_Kb_Char(void);          // ¼ÓÔØ×ÖÄ¸¼üÅÌ
