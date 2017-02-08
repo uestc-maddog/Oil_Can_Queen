@@ -364,7 +364,7 @@ u8 AP_Choose(void)
 	
 	while(1)
 	{	
-		LCD_Clear(WHITE);
+		LCD_Clear(WHITE); 
 		LCD_ShowString(25,150,200,24,24,(u8*)"wifi scanning...");    // Ã· æwifi…®√Ë÷–
 		
 		waittime = 240; Flag = 0; timer = 0;

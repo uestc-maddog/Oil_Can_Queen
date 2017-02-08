@@ -248,19 +248,27 @@ uint8_t RF_RecvHandler(void)
 	switch(recv_buffer[1])         // 从机地址   Drone_ID
 	{
 		case 1:
-			LCD_ShowxNum(54, 72,recv_buffer[3],3,24,0);      // #1   Dis
+			LCD_ShowString(54,72,36,24,24,(u8*)"   ");       // 清除#1 Dis显示
+			if(recv_buffer[3] == 255) LCD_ShowString(54,72,36,24,24,(u8*)"N/A");       // 提示测距出错
+			else                      LCD_ShowxNum(54, 72,recv_buffer[3],3,24,0);      // #1   Dis
 			LCD_ShowxNum(54,102,recv_buffer[4],3,24,0);      // Bat
 			break;
 		case 2:
-			LCD_ShowxNum(174, 72,recv_buffer[3],3,24,0);     // #2   Dis
+			LCD_ShowString(174,72,36,24,24,(u8*)"   ");      // 清除#2 Dis显示
+			if(recv_buffer[3] == 255) LCD_ShowString(174,72,36,24,24,(u8*)"N/A");      // 提示测距出错
+			else                      LCD_ShowxNum(174, 72,recv_buffer[3],3,24,0);     // #2   Dis
 			LCD_ShowxNum(174,102,recv_buffer[4],3,24,0);     // Bat
 			break;
 		case 3:
-			LCD_ShowxNum(54,197,recv_buffer[3],3,24,0);      // #3   Dis
+			LCD_ShowString(54,197,36,24,24,(u8*)"   ");      // 清除#3 Dis显示
+			if(recv_buffer[3] == 255) LCD_ShowString(54,197,36,24,24,(u8*)"N/A");      // 提示测距出错
+			else                      LCD_ShowxNum(54,197,recv_buffer[3],3,24,0);      // #3   Dis
 			LCD_ShowxNum(54,227,recv_buffer[4],3,24,0);      // Bat
 			break;
 		case 4:
-			LCD_ShowxNum(174,197,recv_buffer[3],3,24,0);     // #4   Dis
+			LCD_ShowString(174,197,36,24,24,(u8*)"   ");     // 清除#4 Dis显示
+			if(recv_buffer[3] == 255) LCD_ShowString(174,197,36,24,24,(u8*)"N/A");     // 提示测距出错
+			else                      LCD_ShowxNum(174,197,recv_buffer[3],3,24,0);     // #4   Dis
 			LCD_ShowxNum(174,227,recv_buffer[4],3,24,0);     // Bat
 			break;
 		default:
