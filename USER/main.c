@@ -28,7 +28,7 @@ u8 AckBuffer[ACK_LENGTH]   = {0x55,  0xff,     0,     0xaa};                    
 
 volatile u8 Str_Info[20];  // TCP服务器数据包。包含从机数据包中的有效数据
 
-u8 RF_SendPacket(uint8_t *Sendbuffer, uint8_t length);     // 无线发送数据函数  
+u8 RF_SendPacket(u8 *Sendbuffer, u8 length);               // 无线发送数据函数  
 u8 RF_RecvHandler(void);                                   // 无线数据接收处理 
 void Sys_Init(void);                                       // Oil_Can Queen 系统外设初始化
 
@@ -37,7 +37,7 @@ int main(void)
 	u8 Wifi_SendError = 0, res = 0;           // Wifi_SendError:wifi模块向服务器发送数据出错次数   res：Queen CC1101接受结果  
 	
 	Sys_Init();                               // Oil_Can Queen 系统外设初始化 
-    QueenRun_UI();     //queen 接入服务器后的UI
+    QueenRun_UI();                            // Queen 接入服务器后的UI
 
 	while(1)
 	{
@@ -63,7 +63,7 @@ int main(void)
 						Wifi_SendError = 0;       // 清零
 						printf("连接出错，正在重新连接...\r\n\r\n");	
 						atk_8266_init();      // ATK-ESP8266模块初始化配置函数
-						QueenRun_UI();     //queen 接入服务器后的UI
+						QueenRun_UI();        // Queen 接入服务器后的UI
 						CC1101Init(); 
 						delay_ms(500);
 					}
@@ -95,7 +95,7 @@ int main(void)
 		 6：数据包帧尾错误
          7: 应答信号错误
 ============================================================================*/
-uint8_t RF_SendPacket(uint8_t *Sendbuffer, uint8_t length)
+u8 RF_SendPacket(u8 *Sendbuffer, u8 length)
 {
 	uint8_t  i = 0, ack_len = 0, ack_buffer[10] = {0};
 	RecvWaitTime = (int)RECV_TIMEOUT;           // 等待应答超时限制1500ms
@@ -179,14 +179,10 @@ uint8_t RF_RecvHandler(void)
 	{
 		if(++Wait_Timer == 15000) LCD_Fill(0,271,239,295,WHITE); // 清除通信提示区
 		delay_us(200);
-		if(CC1101_IRQFlag)                  // CC1101接收到数据包信号
-		{
-			//printf("2\r\n");
-			break;        
-		}
+		if(CC1101_IRQFlag) break;            // CC1101接收到数据包信号
 		else
 		{
-			if(Wait_Timer == 65500)   // 等待从机数据包时， 定期检测当前网络连接状态
+			if(Wait_Timer == 65500)          // 等待从机数据包时， 定期检测当前网络连接状态
 			{
 				Wait_Timer = 0;
 				printf("Checking\r\n");
@@ -249,34 +245,38 @@ uint8_t RF_RecvHandler(void)
 	{
 		case 1:
 			LCD_ShowString(54,72,36,24,24,(u8*)"   ");       // 清除#1 Dis显示
-			if(recv_buffer[3] == 255) LCD_ShowString(54,72,36,24,24,(u8*)"N/A");       // 提示测距出错
-			else                      LCD_ShowxNum(54, 72,recv_buffer[3],3,24,0);      // #1   Dis
+			if(recv_buffer[3] == 255)    LCD_ShowString(54,72,36,24,24,(u8*)"N/A");       // 提示测距出错
+			else if(recv_buffer[3] == 1) LCD_ShowString(54,72,36,24,24,(u8*)"Ful");       // 提示已满
+			else                         LCD_ShowxNum(54, 72,recv_buffer[3],3,24,0);      // #1   Dis
 			LCD_ShowxNum(54,102,recv_buffer[4],3,24,0);      // Bat
 			break;
 		case 2:
 			LCD_ShowString(174,72,36,24,24,(u8*)"   ");      // 清除#2 Dis显示
-			if(recv_buffer[3] == 255) LCD_ShowString(174,72,36,24,24,(u8*)"N/A");      // 提示测距出错
-			else                      LCD_ShowxNum(174, 72,recv_buffer[3],3,24,0);     // #2   Dis
+			if(recv_buffer[3] == 255)      LCD_ShowString(174,72,36,24,24,(u8*)"N/A");      // 提示测距出错
+			else if(recv_buffer[3] == 1)   LCD_ShowString(174,72,36,24,24,(u8*)"Ful");      // 提示已满
+			else                           LCD_ShowxNum(174, 72,recv_buffer[3],3,24,0);     // #2   Dis
 			LCD_ShowxNum(174,102,recv_buffer[4],3,24,0);     // Bat
 			break;
 		case 3:
 			LCD_ShowString(54,197,36,24,24,(u8*)"   ");      // 清除#3 Dis显示
-			if(recv_buffer[3] == 255) LCD_ShowString(54,197,36,24,24,(u8*)"N/A");      // 提示测距出错
-			else                      LCD_ShowxNum(54,197,recv_buffer[3],3,24,0);      // #3   Dis
+			if(recv_buffer[3] == 255)      LCD_ShowString(54,197,36,24,24,(u8*)"N/A");      // 提示测距出错
+			else if(recv_buffer[3] == 1)   LCD_ShowString(54,197,36,24,24,(u8*)"Ful");      // 提示已满
+			else                           LCD_ShowxNum(54,197,recv_buffer[3],3,24,0);      // #3   Dis
 			LCD_ShowxNum(54,227,recv_buffer[4],3,24,0);      // Bat
 			break;
 		case 4:
 			LCD_ShowString(174,197,36,24,24,(u8*)"   ");     // 清除#4 Dis显示
-			if(recv_buffer[3] == 255) LCD_ShowString(174,197,36,24,24,(u8*)"N/A");     // 提示测距出错
-			else                      LCD_ShowxNum(174,197,recv_buffer[3],3,24,0);     // #4   Dis
+			if(recv_buffer[3] == 255)      LCD_ShowString(174,197,36,24,24,(u8*)"N/A");     // 提示测距出错
+			else if(recv_buffer[3] == 1)   LCD_ShowString(174,197,36,24,24,(u8*)"Ful");     // 提示已满
+			else                           LCD_ShowxNum(174,197,recv_buffer[3],3,24,0);     // #4   Dis
 			LCD_ShowxNum(174,227,recv_buffer[4],3,24,0);     // Bat
 			break;
 		default:
 			break;
 	}
 	
-	//提取出从机数据包中的有效数据到  Str_Info 中    从机地址+有效数据
-	Str_Info[5] = recv_buffer[1];                // 从机地址   Drone_ID
+	// 提取出从机数据包中的有效数据到  Str_Info 中    从机地址+有效数据
+	Str_Info[5] = recv_buffer[1];                // 从机地址         Drone_ID
 	Str_Info[6] = recv_buffer[3];                // Distance         单位：cm
 	Str_Info[7] = recv_buffer[4];                // 电池电量百分比   [0,100]
 	Str_Info[8] = 0;                             // 添加字符串结束符
@@ -302,7 +302,7 @@ void Sys_Init(void)
 	u8 *ID;
 
 	// 固定数据
-	Str_Info[0] = 0x23;                          // TCP包头
+	Str_Info[0] = 0x23;                          // TCP帧头
 	Str_Info[1] = (u8)(Queen_ID >> 24);          // Queen_ID
 	Str_Info[2] = (u8)(Queen_ID >> 16);          // Queen_ID
 	Str_Info[3] = (u8)(Queen_ID >> 8);           // Queen_ID
