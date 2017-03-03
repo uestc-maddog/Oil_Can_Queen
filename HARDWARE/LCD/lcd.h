@@ -129,6 +129,10 @@ void LCD_Set_Window(u16 sx,u16 sy,u16 width,u16 height);	//设置窗口
 
 void display_BootImage(void);                               //显示开机图片
 void display_MDlogo(void);                                  //显示 MD logo
+void display_wifilogo(void);                                //显示 wifi logo
+void display_UpPage(u8 offset);                             //显示 上一页 图标
+void display_DownPage(u8 offset);                           //显示 下一页 图标
+void display_WifiRefresh(u8 offset);                        //显示 WifiRefresh 图标 
 void QueenRun_UI(void);                                     //queen 接入服务器后的UI
 	
 //写数据函数

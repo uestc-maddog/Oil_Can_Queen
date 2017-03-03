@@ -475,7 +475,7 @@ void CC1101Init(void)
   	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;					// 使能外部中断通道
   	NVIC_Init(&NVIC_InitStructure); 
 
-	EXTI4_Set(0);             // 屏蔽EXTI8中断
+	EXTI4_Set(0);             // 屏蔽EXTI4中断
 	
 	/*Configure GPIO pins : PA4 CSN*/
 	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_4;

@@ -218,7 +218,7 @@ u8 atk_8266_init(void)
 	while(atk_8266_send_cmd((u8*)"ATE0",(u8*)"OK",20));      //关闭回显
 	
 	delay_ms(10); 
-	atk_8266_at_response(1);//检查ATK-ESP8266模块发送过来的数据,及时上传给电脑
+	atk_8266_at_response(1);                     // 检查ATK-ESP8266模块发送过来的数据,通过串口及时上传至上位机
 
 	printf("正在配置ATK-ESP8266模块，请稍等...\r\n");
 	
@@ -227,16 +227,17 @@ u8 atk_8266_init(void)
 	delay_ms(1000);         //延时3S等待重启成功
 	delay_ms(1000);
 	delay_ms(1000);
-//	delay_ms(100);          //delay_ms(800);
 
-	/*************************用户手动连接wifi*********************************/
-	while(1)
+	/**********************************************用户手动连接wifi****************************************************/
+	if(Wifi_LinkFlag == 0)    // 若未建立连接，则手动连接wifi；        若已建立过连接，则跳过，直接连入上次选择的wifi
 	{
-		if(Wifi_LinkFlag == 1) break;  // 已建立过连接，可直接连入上次选择的wifi
-		if(AP_Choose() == 0)           // 成功选择wifi
+		while(1)
 		{
-			PWD_Index = 0;                 // 标记当前密码长度
-			if(Enter_AP_PWD() == 0) break; // 成功输入密码
+			if(AP_Choose() == 0)           // 成功选择wifi
+			{
+				PWD_Index = 0;                 // 标记当前密码长度
+				if(Enter_AP_PWD() == 0) break; // 成功输入密码
+			}
 		}
 	}
 	
@@ -246,14 +247,12 @@ u8 atk_8266_init(void)
 	BACK_COLOR = WHITE;
 	LCD_ShowString(18,120,200,24,24,(u8*)"Wifi Connecting");
 	LCD_ShowString(25,150,200,24,24,(u8*)" Please wait");
-	/*************************用户手动连接wifi*********************************/
+	/**********************************************用户手动连接wifi****************************************************/
 	
 	
 	//设置连接到的WIFI网络名称/加密方式/密码,这几个参数需要根据您自己的路由器设置进行修改!! 
-	//printf("\r\n%s %s\r\n",wifista_ssid,wifista_password); //打印无线参数:ssid,密码
-	printf("\r\n%s %s\r\n",wifista_ssid,PWD_Temp);        // 打印无线参数:ssid,密码
-
-	sprintf((char*)p,"AT+CWJAP=\"%s\",\"%s\"",wifista_ssid,PWD_Temp);//设置无线参数:ssid,密码
+	printf("\r\n%s %s\r\n",wifista_ssid,PWD_Temp);                    // 打印无线参数:ssid,密码
+	sprintf((char*)p,"AT+CWJAP=\"%s\",\"%s\"",wifista_ssid,PWD_Temp); // 设置无线参数:ssid,密码
 	timer = 0; Wifi_Link_Timer = 0;                        //清零
 	while(atk_8266_send_cmd(p,(u8*)"WIFI GOT IP",300))     //连接目标路由器,并且获得IP
 	{
@@ -294,9 +293,10 @@ u8 atk_8266_init(void)
 	printf("成功连接目标wifi：%s\r\n", wifista_ssid);
 	delay_ms(650);delay_ms(650);
 	delay_ms(650);
-	// Enter TCP IP Addr
+	
+	// 手动Enter TCP IP Addr
 //	IP_Temp[0] = 0;        // 密码输入缓存
-//    IP_Index = 0;        // 标记当前IP长度
+//  IP_Index = 0;        // 标记当前IP长度
 //	if(Enter_TCP_IP())   goto wifi_scan;        // 输入IP及端口失败
 	
 	printf("正在连接TCP服务器 %s:%s\r\n", (u8*)remote_ip, (u8*)portnum);
@@ -342,7 +342,7 @@ u8 atk_8266_init(void)
 	QueenRun_UI();                                             // queen 接入服务器后的UI
 	atk_8266_send_cmd((u8*)"AT+CIPMODE=1",(u8*)"OK",200);      // 传输模式为：透传		
 		
-	atk_8266_get_wanip(ipbuf);                                 // 服务器模式,获取WAN IP
+	atk_8266_get_wanip(ipbuf);                                 // 服务器模式, 获取WAN IP
 	sprintf((char*)p,"IP地址:%s 端口:%s",ipbuf,(u8*)portnum);
 	printf("%s\r\n", p);
 	printf("工作模式：%s\r\n", (u8*)ATK_ESP8266_WORKMODE_TBL[1]);      // TCP客户端
@@ -357,10 +357,10 @@ u8 atk_8266_init(void)
 // 返回值： 0--连接AP成功    other--失败，应答超时
 u8 AP_Choose(void)
 {
-	volatile u8 waittime = 200;                   // waittime:应答等待时间   20ms
-	volatile u8 AP_TAB[25][30] = {0,};            // wifi 热点名缓存
-	volatile u8 Flag = 0;
-	volatile u16 i = 0, m = 0, n = 0, len = 0, timer = 0;
+	volatile u8 waittime = 240;                   // waittime:应答等待时间   20ms
+	volatile u8 AP_TAB[40][30] = {0,};            // wifi 热点名缓存   最多25组
+	volatile u8 Flag = 0, ApIndex = 0;
+	volatile u16 i = 0, m = 0, n = 0, len = 0, timer = 0;            // m:搜索到的AP个数
 	
 	while(1)
 	{	
@@ -368,11 +368,11 @@ u8 AP_Choose(void)
 		LCD_ShowString(25,150,200,24,24,(u8*)"wifi scanning...");    // 提示wifi扫描中
 		
 		waittime = 240; Flag = 0; timer = 0;
-		for(m = 0; m < 25; m++)
+		for(m = 0; m < 40; m++)                                      // AP_TAB数组清零
 		{
 			for(n = 0; n < 30; n++) AP_TAB[m][n] = 0;
 		}
-		i = 0; m = 0; n = 0; len = 0;
+		i = 0; m = 0; n = 0; len = 0; ApIndex = 0;
 		USART2_RX_BUF[0] = 0;                // 串口缓存清零
 		USART2_RX_STA = 0;
 		Join_Scan = 1;
@@ -394,9 +394,9 @@ u8 AP_Choose(void)
 			printf("Wifi Scan Ack Error...Retrying\r\n");
 			LCD_Clear(WHITE);
 			LCD_ShowString(25,120,200,24,24,(u8*)"There is no wifi!");    // 提示扫描不到wifi
-			LCD_ShowString(25,150,200,24,24,(u8*)"Retry the scan.");    // 提示wifi扫描中
+			LCD_ShowString(25,150,200,24,24,(u8*)"Retry the scan.");      // 提示wifi扫描中
 			delay_ms(1000);
-			LCD_ShowString(25,150,200,24,24,(u8*)"Retry the scan..");    // 提示wifi扫描中
+			LCD_ShowString(25,150,200,24,24,(u8*)"Retry the scan..");     // 提示wifi扫描中
 			delay_ms(1000);
 			LCD_ShowString(25,150,200,24,24,(u8*)"Retry the scan...");    // 提示wifi扫描中
 			delay_ms(1000);
@@ -404,8 +404,8 @@ u8 AP_Choose(void)
 		}
 
 		// 成功接收应答
-	//	printf("%d len=%d\r\n", waittime, USART2_RX_STA&0X7FFF);
-	//	printf("%s\r\n", USART2_RX_BUF);
+		//printf("%d len=%d\r\n", waittime, USART2_RX_STA&0X7FFF);
+		//printf("%s\r\n", USART2_RX_BUF);
 		for(i = 0; i < len; i++)              // 将wifi 热点名缓存到AP_TAB
 		{
 			if(USART2_RX_BUF[i] == '"')
@@ -432,17 +432,33 @@ u8 AP_Choose(void)
 		LCD_Fill(0,0,239,47,WHITE);
 		POINT_COLOR = BLUE;
 		LCD_ShowString(15,15,240,16,16, (u8*)"Please select wifi:"); 
+		display_WifiRefresh(0);
 		LCD_Fill(0,48,239,319,0xEEEE);		   				     // 填充单色
 		POINT_COLOR = BLACK;
-		LCD_DrawLine(0, 48, 239, 48);		         // 画线
+		LCD_DrawLine(0, 48, 239, 48);		                     // 画线
 
-		for(i = 0; i < m; i++)
+		printf("m = %d, ApIndex = %d\r\n", m, ApIndex);
+		if(m > (ApIndex + 13))                                   // 单屏仅能显示13个热点，若大于13个则需要翻页显示
 		{
-			printf("AP_TAB[%d]:%s\r\n", i, AP_TAB[i]);
-			LCD_ShowString(60,60+20*i,240,16,16,(u8*)AP_TAB[i]); 
-			if(i != m-1) LCD_DrawLine(60, 78+20*i, 239, 78+20*i);		     //画线
+			for(i = ApIndex; i < ApIndex+13; i++)                // 单屏逐行显示各AP 13个
+			{
+				printf("AP_TAB[%d]:%s\r\n", i, AP_TAB[i]);
+				LCD_ShowString(60,60+20*i,240,16,16,(u8*)AP_TAB[i]); 
+				LCD_DrawLine(60, 78+20*i, 239, 78+20*i);		     // 画短横线
+			}
+			display_DownPage(0);                                     // 显示翻页图标   此时仅下一页！
 		}
-		LCD_DrawLine(0, 68+20*i, 239, 68+20*i);		         // 画线
+		else	                                     // AP数目能够单屏显示
+		{
+			for(i = ApIndex; i < m; i++)             // 从当前索引号ApIndex，逐行显示各AP
+			{
+				printf("AP_TAB[%d]:%s\r\n", i, AP_TAB[i]);
+				LCD_ShowString(60,60+20*i,240,16,16,(u8*)AP_TAB[i]); 
+				if(i != (m-1)) LCD_DrawLine(60, 78+20*i, 239, 78+20*i);		         // 画短横线
+			}
+			LCD_DrawLine(0, 68+20*i, 239, 68+20*i);		         // 画长横线
+		}
+			
 		while(1)    // 等待用户触摸选择
 		{
 			tp_dev.scan(0); 		 
@@ -450,7 +466,77 @@ u8 AP_Choose(void)
 			{	
 				if(tp_dev.x[0]<lcddev.width&&tp_dev.y[0]<lcddev.height)
 				{	
-					if(tp_dev.y[0] > 60)        // AP显示区域内
+					if(tp_dev.x[0] > 180 && tp_dev.y[0] < 45)        // wifi refresh按下
+					{
+						display_WifiRefresh(1);
+						delay_ms(600);
+						break;
+					}
+					if((m > (ApIndex + 13)) && tp_dev.x[0] < 60 && tp_dev.y[0] > 260)     // 下一页按下
+					{
+						printf("DownPage Pressed\r\n");
+						display_DownPage(1);
+						delay_ms(300);                                   // 触摸按下效果
+						
+						LCD_Fill(0,50,239,319,0xEEEE);		   	         // 填充单色
+						ApIndex += 13;                                   // 将索引号更新至当前未显示的第一个AP
+						display_UpPage(0);                               // 显示翻页图标  上一页 
+						//printf("m = %d, ApIndex = %d\r\n", m, ApIndex);
+						if(m > (ApIndex + 13))                           // 单屏仅能显示13个热点，若大于13个则需要翻页显示
+						{
+							for(i = ApIndex; i < ApIndex+13; i++)        // 单屏逐行显示各AP 13个
+							{
+								printf("AP_TAB[%d]:%s\r\n", i, AP_TAB[i]);
+								LCD_ShowString(60,60+20*i,240,16,16,(u8*)AP_TAB[i]); 
+								LCD_DrawLine(60, 78+20*i, 239, 78+20*i);		     // 画短横线
+							}
+							display_DownPage(0);                                     // 显示翻页图标  下一页
+						}
+						else	                                     // AP数目能够单屏显示
+						{
+							for(i = ApIndex; i < m; i++)             // 从当前索引号ApIndex，逐行显示各AP
+							{
+								printf("AP_TAB[%d]:%s\r\n", i, AP_TAB[i]);
+								LCD_ShowString(60,60+20*(i%13),240,16,16,(u8*)AP_TAB[i]); 
+								if(i != (m-1)) LCD_DrawLine(60, 78+20*(i%13), 239, 78+20*(i%13));		         // 画短横线
+							}
+							if((i%13)  > 3) LCD_DrawLine(0, 68+20*(i%13), 239, 68+20*(i%13));		             // 画长横线
+							else            LCD_DrawLine(0, 68+20*3, 239, 68+20*3);		                         // 画长横线   // 不遮挡uppage图表
+						} 
+					}
+					
+					if( ApIndex >= 13 && tp_dev.x[0] < 60 && (tp_dev.y[0] > 48) && (tp_dev.y[0] < 108) )      // 上一页
+					{
+						printf("UpPage Pressed\r\n");
+						display_UpPage(1);
+						delay_ms(300);                                   // 触摸按下效果
+						
+						LCD_Fill(0,50,239,319,0xEEEE);		   	         // 填充单色
+						ApIndex -= 13;                                   // 将索引号更新至当前未显示的第一个AP
+						if(ApIndex > 13)  display_UpPage(0);             // 显示翻页图标  上一页
+						display_DownPage(0);                             // 显示翻页图标  下一页
+						if(m > (ApIndex + 13))                           // 单屏仅能显示13个热点，若大于13个则需要翻页显示
+						{
+							for(i = ApIndex; i < ApIndex+13; i++)        // 单屏逐行显示各AP 13个
+							{
+								printf("AP_TAB[%d]:%s\r\n", i, AP_TAB[i]);
+								LCD_ShowString(60,60+20*i,240,16,16,(u8*)AP_TAB[i]); 
+								LCD_DrawLine(60, 78+20*i, 239, 78+20*i);		     // 画短横线
+							}
+						}
+						else	                                     // AP数目能够单屏显示
+						{
+							for(i = ApIndex; i < m; i++)             // 从当前索引号ApIndex，逐行显示各AP
+							{
+								printf("AP_TAB[%d]:%s\r\n", i, AP_TAB[i]);
+								LCD_ShowString(60,60+20*i,240,16,16,(u8*)AP_TAB[i]); 
+								if(i != (m-1)) LCD_DrawLine(60, 78+20*i, 239, 78+20*i);		         // 画短横线
+							}
+							LCD_DrawLine(0, 68+20*i, 239, 68+20*i);		         // 画长横线
+						}
+					}
+					
+					else if(tp_dev.x[0] > 60 && tp_dev.y[0] > 60)        // AP显示区域内
 					{
 						int Index = (tp_dev.y[0] - 60) / 20;
 						wifista_ssid = (u8*)AP_TAB[Index];
@@ -468,7 +554,7 @@ u8 AP_Choose(void)
 			else 
 			{
 				delay_ms(10);	              // 没有按键按下的时候 	 
-				if(++timer == 950) break;     // 10s内未选择网络，则刷新网络
+				if(++timer == 2500) break;    // 25s内未选择网络，则刷新网络
 			}				
 		}
 	}
@@ -501,7 +587,7 @@ u8 Enter_AP_PWD(void)
 	LCD_DrawLine(0, 101, 239, 101);
 	
 	// 加载数字键盘UI
-	KbNum_UI(0);      // 0--密码输入 
+	KbNum_UI(0);         // 0--密码输入 
 	BACK_COLOR = WHITE;
 	
 	while(1) 
@@ -532,7 +618,6 @@ u8 Enter_AP_PWD(void)
 					{
 						if(PWD_Index >= 8)              // 输入密码长度 > 8     有效输入
 						{
-//							wifista_password = (u8*)PWD_Temp;  // 获取到密码
 							BACK_COLOR = 0xEEEE;                          // Join按下效果  向左下角偏移2像素
 							POINT_COLOR = RED; 
 							LCD_Fill(203,25,239,50,WHITE);    // 清除原来的显示
